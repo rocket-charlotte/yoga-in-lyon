@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Yoga à 6e arrondissement de Lyon — Studios et cours | Yoga In Lyon</title>
-<meta name="description" content="Cours de yoga à 6e arrondissement de Lyon : 5 studios vérifiés, 71 créneaux par semaine (Ashtanga, Hatha Yoga, Pranayama &amp; Nidra, Yin Yoga, Yoga Kundalini, Yoga Vinyasa).">
+<title>Yoga dans le 6e arrondissement de Lyon — Studios et cours | Yoga In Lyon</title>
+<meta name="description" content="Cours de yoga dans le 6e arrondissement de Lyon : 5 studios vérifiés, 71 créneaux par semaine (Ashtanga, Hatha Yoga, Pranayama &amp; Nidra, Yin Yoga, Yoga Kundalini, Yoga Vinyasa).">
 <link rel="canonical" href="https://yoga-in-lyon.fr/yoga-lyon-6e.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Yoga In Lyon">
-<meta property="og:title" content="Yoga à 6e arrondissement de Lyon — Studios et cours | Yoga In Lyon">
-<meta property="og:description" content="Cours de yoga à 6e arrondissement de Lyon : 5 studios vérifiés, 71 créneaux par semaine (Ashtanga, Hatha Yoga, Pranayama &amp; Nidra, Yin Yoga, Yoga Kundalini, Yoga Vinyasa).">
+<meta property="og:title" content="Yoga dans le 6e arrondissement de Lyon — Studios et cours | Yoga In Lyon">
+<meta property="og:description" content="Cours de yoga dans le 6e arrondissement de Lyon : 5 studios vérifiés, 71 créneaux par semaine (Ashtanga, Hatha Yoga, Pranayama &amp; Nidra, Yin Yoga, Yoga Kundalini, Yoga Vinyasa).">
 <meta property="og:image" content="https://yoga-in-lyon.fr/banner_web.jpg">
 <meta property="og:url" content="https://yoga-in-lyon.fr/yoga-lyon-6e.html">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Yoga à 6e arrondissement de Lyon — Studios et cours | Yoga In Lyon">
-<meta name="twitter:description" content="Cours de yoga à 6e arrondissement de Lyon : 5 studios vérifiés, 71 créneaux par semaine (Ashtanga, Hatha Yoga, Pranayama &amp; Nidra, Yin Yoga, Yoga Kundalini, Yoga Vinyasa).">
+<meta name="twitter:title" content="Yoga dans le 6e arrondissement de Lyon — Studios et cours | Yoga In Lyon">
+<meta name="twitter:description" content="Cours de yoga dans le 6e arrondissement de Lyon : 5 studios vérifiés, 71 créneaux par semaine (Ashtanga, Hatha Yoga, Pranayama &amp; Nidra, Yin Yoga, Yoga Kundalini, Yoga Vinyasa).">
 <meta name="twitter:image" content="https://yoga-in-lyon.fr/banner_web.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -166,9 +166,9 @@
 
 <div class="quartier-hero">
   <div class="eyebrow">Yoga In Lyon</div>
-  <h1>Cours de yoga à 6e arrondissement de Lyon</h1>
-  <p>Cours de yoga à 6e arrondissement de Lyon : 5 studios vérifiés, 71 créneaux par semaine (Ashtanga, Hatha Yoga, Pranayama & Nidra, Yin Yoga, Yoga Kundalini, Yoga Vinyasa). Retrouvez ci-dessous les studios du secteur avec leurs styles enseignés, ou consultez directement le planning complet filtré sur 6e.</p>
-  <a class="cta-btn" href="Yoga_a_Lyon_Planning.html?arr=Lyon%206e">Voir le planning complet de 6e arrondissement de Lyon</a>
+  <h1>Cours de yoga dans le 6e arrondissement de Lyon</h1>
+  <p>Cours de yoga dans le 6e arrondissement de Lyon : 5 studios vérifiés, 71 créneaux par semaine (Ashtanga, Hatha Yoga, Pranayama & Nidra, Yin Yoga, Yoga Kundalini, Yoga Vinyasa). Retrouvez ci-dessous les studios du secteur avec leurs styles enseignés, ou consultez directement le planning complet filtré dans le 6e arrondissement de Lyon.</p>
+  <a class="cta-btn" href="Yoga_a_Lyon_Planning.html?arr=Lyon%206e">Voir le planning complet du 6e arrondissement de Lyon</a>
 </div>
 
 <div class="map-section">
@@ -272,8 +272,8 @@ const MARKERS = [{"nom": "The Good Flow", "lat": 45.7645, "lng": 4.853}, {"nom":
 const map = L.map('quartier-map', { scrollWheelZoom: false }).setView(
   MARKERS.length ? [MARKERS[0].lat, MARKERS[0].lng] : [45.764, 4.842], 13
 );
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd', maxZoom: 19
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors', subdomains: 'abc', maxZoom: 19
 }).addTo(map);
 MARKERS.forEach(m => {
   L.circleMarker([m.lat, m.lng], { radius: 9, color: '#ffffff', weight: 2, fillColor: '#2c1c3d', fillOpacity: 1 })

@@ -167,7 +167,7 @@
 <div class="quartier-hero">
   <div class="eyebrow">Yoga In Lyon</div>
   <h1>Cours de yoga à Villeurbanne</h1>
-  <p>Cours de yoga à Villeurbanne : 1 studio vérifié, 21 créneaux par semaine (Hatha Yoga, Pranayama & Nidra, Yin Yoga, Yoga Vinyasa). Retrouvez ci-dessous les studios du secteur avec leurs styles enseignés, ou consultez directement le planning complet filtré sur Villeurbanne.</p>
+  <p>Cours de yoga à Villeurbanne : 1 studio vérifié, 21 créneaux par semaine (Hatha Yoga, Pranayama & Nidra, Yin Yoga, Yoga Vinyasa). Retrouvez ci-dessous les studios du secteur avec leurs styles enseignés, ou consultez directement le planning complet filtré à Villeurbanne.</p>
   <a class="cta-btn" href="Yoga_a_Lyon_Planning.html?arr=Villeurbanne">Voir le planning complet de Villeurbanne</a>
 </div>
 
@@ -232,8 +232,8 @@ const MARKERS = [{"nom": "Vima Yoga", "lat": 45.7665, "lng": 4.8807}];
 const map = L.map('quartier-map', { scrollWheelZoom: false }).setView(
   MARKERS.length ? [MARKERS[0].lat, MARKERS[0].lng] : [45.764, 4.842], 13
 );
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd', maxZoom: 19
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors', subdomains: 'abc', maxZoom: 19
 }).addTo(map);
 MARKERS.forEach(m => {
   L.circleMarker([m.lat, m.lng], { radius: 9, color: '#ffffff', weight: 2, fillColor: '#2c1c3d', fillOpacity: 1 })

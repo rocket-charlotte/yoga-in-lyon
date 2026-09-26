@@ -392,6 +392,16 @@ def arr_label(arr):
     return arr
 
 
+def arr_prep_a(arr):
+    """Préposition pour 'yoga ___ label' : 'dans le' pour un arrondissement, 'à' pour Villeurbanne."""
+    return "dans le" if arr.startswith("Lyon ") else "à"
+
+
+def arr_prep_de(arr):
+    """Préposition pour 'planning ___ label' : 'du' pour un arrondissement, 'de' pour Villeurbanne."""
+    return "du" if arr.startswith("Lyon ") else "de"
+
+
 def all_arrondissements():
     return sorted(set(s["arr"] for s in STUDIOS), key=lambda a: (a != "Villeurbanne", a))
 

@@ -445,10 +445,10 @@ function submitNewsletter(e) {{
 const MARKERS = {markers_json};
 
 const map = L.map('map', {{ scrollWheelZoom: false }}).setView([45.764, 4.835], 12);
-L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png', {{
+L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
   maxZoom: 19,
-  subdomains: 'abcd',
-  attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+  subdomains: 'abc',
+  attribution: '&copy; OpenStreetMap contributors'
 }}).addTo(map);
 
 const purpleIcon = L.divIcon({{

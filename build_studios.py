@@ -154,8 +154,8 @@ function filterArr(el, arr) {{
 <script>
 const MARKERS = {markers_json};
 const map = L.map('studios-map', {{ scrollWheelZoom: false }}).setView([45.764, 4.842], 12);
-L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png', {{
-  attribution: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd', maxZoom: 19
+L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
+  attribution: '&copy; OpenStreetMap contributors', subdomains: 'abc', maxZoom: 19
 }}).addTo(map);
 MARKERS.forEach(m => {{
   L.circleMarker([m.lat, m.lng], {{ radius: 9, color: '#ffffff', weight: 2, fillColor: '#2c1c3d', fillOpacity: 1 }})

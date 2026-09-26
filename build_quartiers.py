@@ -83,10 +83,12 @@ def build_page(arr, all_arrs):
     )
 
     styles_txt = ", ".join(types_arr) if types_arr else "plusieurs styles de yoga"
+    prep_a = sc.arr_prep_a(arr)
+    prep_de = sc.arr_prep_de(arr)
 
-    title = f"Yoga à {label} — Studios et cours | Yoga In Lyon"
+    title = f"Yoga {prep_a} {label} — Studios et cours | Yoga In Lyon"
     description = (
-        f"Cours de yoga à {label} : {len(studios_arr)} studio"
+        f"Cours de yoga {prep_a} {label} : {len(studios_arr)} studio"
         f"{'s' if len(studios_arr) > 1 else ''} vérifié"
         f"{'s' if len(studios_arr) > 1 else ''}, {len(creneaux_arr)} créneau"
         f"{'x' if len(creneaux_arr) > 1 else ''} par semaine ({styles_txt})."
@@ -113,9 +115,9 @@ def build_page(arr, all_arrs):
 
 <div class="quartier-hero">
   <div class="eyebrow">Yoga In Lyon</div>
-  <h1>Cours de yoga à {label}</h1>
-  <p>{description} Retrouvez ci-dessous les studios du secteur avec leurs styles enseignés, ou consultez directement le planning complet filtré sur {label.split(' arrondissement')[0] if 'arrondissement' in label else label}.</p>
-  <a class="cta-btn" href="Yoga_a_Lyon_Planning.html?arr={arr.replace(' ', '%20')}">Voir le planning complet de {label}</a>
+  <h1>Cours de yoga {prep_a} {label}</h1>
+  <p>{description} Retrouvez ci-dessous les studios du secteur avec leurs styles enseignés, ou consultez directement le planning complet filtré {prep_a} {label}.</p>
+  <a class="cta-btn" href="Yoga_a_Lyon_Planning.html?arr={arr.replace(' ', '%20')}">Voir le planning complet {prep_de} {label}</a>
 </div>
 
 <div class="map-section">
@@ -141,8 +143,8 @@ const MARKERS = {markers_json};
 const map = L.map('quartier-map', {{ scrollWheelZoom: false }}).setView(
   MARKERS.length ? [MARKERS[0].lat, MARKERS[0].lng] : [45.764, 4.842], 13
 );
-L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png', {{
-  attribution: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd', maxZoom: 19
+L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
+  attribution: '&copy; OpenStreetMap contributors', subdomains: 'abc', maxZoom: 19
 }}).addTo(map);
 MARKERS.forEach(m => {{
   L.circleMarker([m.lat, m.lng], {{ radius: 9, color: '#ffffff', weight: 2, fillColor: '#2c1c3d', fillOpacity: 1 }})
