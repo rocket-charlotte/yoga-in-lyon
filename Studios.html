@@ -118,6 +118,15 @@
     footer.site-footer .wordmark { font-size: 34px; }
   }
 
+  /* Habillage des cartes Leaflet pour matcher la charte du site */
+  .leaflet-container { font-family: 'Inter', sans-serif; background: #f4f1f7 !important; }
+  .leaflet-popup-content-wrapper { border-radius: 14px; box-shadow: 0 12px 28px rgba(65,41,87,0.22); }
+  .leaflet-popup-content { margin: 14px 16px; font-size: 13.5px; line-height: 1.5; color: var(--ink); }
+  .leaflet-popup-content strong { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 600; color: var(--brand-purple); }
+  .leaflet-popup-content a { font-weight: 600; }
+  .leaflet-popup-tip { box-shadow: 0 6px 14px rgba(65,41,87,0.15); }
+  .leaflet-control-zoom a { color: var(--brand-purple) !important; border-radius: 8px !important; }
+
 
   .studios-header { max-width: 1180px; margin: 0 auto; padding: 56px 24px 20px; }
   .studios-header h1 { font-size: 32px; font-weight: 500; margin: 0 0 10px; }
@@ -498,11 +507,13 @@ function filterArr(el, arr) {
 <script>
 const MARKERS = [{"nom": "École de Yoga Horizon", "lat": 45.7706, "lng": 4.8291, "arr": "Lyon 1er", "quartier": "Croix-Rousse (pentes)", "site": "https://www.yoga-horizon.fr/activites/cours-de-yoga/cours-yoga-lyon-1/"}, {"nom": "Multifa", "lat": 45.769, "lng": 4.8275, "arr": "Lyon 1er", "quartier": "Croix-Rousse", "site": "https://multifa.fr/"}, {"nom": "Karan Anand Nathalie", "lat": 45.746, "lng": 4.832, "arr": "Lyon 1er", "quartier": "Cours donnés Lyon 7e / Caluire", "site": "https://www.karananandnathalie.com/"}, {"nom": "Latitude Yoga", "lat": 45.7525, "lng": 4.8265, "arr": "Lyon 2e", "quartier": "Ainay", "site": "https://www.latitudeyoga.com/planning-/"}, {"nom": "Yoga Bellecour", "lat": 45.76, "lng": 4.833, "arr": "Lyon 2e", "quartier": "Bellecour", "site": "https://yoga-bellecour.com/horaires-tarifs/"}, {"nom": "Samtosha Yoga - Patricia Heude", "lat": 45.7615, "lng": 4.8325, "arr": "Lyon 2e", "quartier": "Cordeliers", "site": "http://www.samtosha-yoga.fr/"}, {"nom": "École de Yoga de Mysore (Ashtanga)", "lat": 45.7528, "lng": 4.8268, "arr": "Lyon 2e", "quartier": "Ainay", "site": "http://www.yoga-ashtanga.com/"}, {"nom": "Studio Arbol Flow", "lat": 45.7592, "lng": 4.8415, "arr": "Lyon 3e", "quartier": "Part-Dieu / Garibaldi", "site": "https://arbolflow.com/planning-arbolflow/"}, {"nom": "Centre Tao Yoga", "lat": 45.7738, "lng": 4.8283, "arr": "Lyon 4e", "quartier": "Croix-Rousse", "site": "http://centretaoyoga.fr/planning/"}, {"nom": "Centre de Yoga Iyengar Croix-Rousse", "lat": 45.7728, "lng": 4.8296, "arr": "Lyon 4e", "quartier": "Croix-Rousse", "site": "https://www.yogaiyengar-lyon.com/cours-planning.html"}, {"nom": "L'Atelier du Yoga", "lat": 45.7718, "lng": 4.8302, "arr": "Lyon 4e", "quartier": "Croix-Rousse", "site": "http://www.atelier-du-yoga.fr/"}, {"nom": "Yoga Room - Les Halles", "lat": 45.7618, "lng": 4.8478, "arr": "Lyon 3e", "quartier": "Les Halles / Part-Dieu", "site": "https://www.yoga-room.fr/schedule"}, {"nom": "Yeahga (Espace holistique)", "lat": 45.7738, "lng": 4.827, "arr": "Lyon 4e", "quartier": "Croix-Rousse", "site": "https://www.yeahga.fr/nos-cours"}, {"nom": "Yoga Korner", "lat": 45.768, "lng": 4.833, "arr": "Lyon 1er", "quartier": "Lyon 1er", "site": "http://yogakorner.fr/"}, {"nom": "Yoga by Valérie Maurel (Saône & Soi)", "lat": 45.7645, "lng": 4.8195, "arr": "Lyon 5e", "quartier": "Vieux Lyon", "site": "https://www.yogabyvaleriemaurel.com/cours-yoga-lyon-5-vieux-lyon/"}, {"nom": "Cocon Yoga - Le Cocon", "lat": 45.7448, "lng": 4.8398, "arr": "Lyon 7e", "quartier": "Jean Macé", "site": "https://coconyoga.com/planning"}, {"nom": "Cocon Yoga - Oblique", "lat": 45.7469, "lng": 4.8362, "arr": "Lyon 7e", "quartier": "Saxe-Gambetta", "site": "https://coconyoga.com/planning"}, {"nom": "GOTAMYOGA", "lat": 45.7458, "lng": 4.858, "arr": "Lyon 8e", "quartier": "Monplaisir / Laënnec", "site": "https://www.gotamyoga.fr/"}, {"nom": "Pranam Yoga", "lat": 45.7699, "lng": 4.8047, "arr": "Lyon 9e", "quartier": "Vaise", "site": "https://pranam-yoga.fr/"}, {"nom": "Vima Yoga", "lat": 45.7665, "lng": 4.8807, "arr": "Villeurbanne", "quartier": "Gratte-Ciel", "site": "https://www.vima-yoga.com/"}, {"nom": "The Good Flow", "lat": 45.7645, "lng": 4.853, "arr": "Lyon 6e", "quartier": "Part-Dieu / Brotteaux", "site": "https://thegoodflow-yoga.com/studio-lyon-6"}, {"nom": "O Yoga Studio", "lat": 45.769, "lng": 4.848, "arr": "Lyon 6e", "quartier": "Foch / Parc Tête d'Or", "site": "https://www.oyogastudio.com/"}, {"nom": "Les Ailes Hatha Yoga", "lat": 45.7715, "lng": 4.8555, "arr": "Lyon 6e", "quartier": "Brotteaux", "site": "https://www.les-ailes.fr/"}, {"nom": "Yoga Dojo Lyon Massena", "lat": 45.7708, "lng": 4.854, "arr": "Lyon 6e", "quartier": "Brotteaux", "site": "https://yoga.dojolyon.fr/"}, {"nom": "Sesam Yoga Lyon 6", "lat": 45.7695, "lng": 4.85, "arr": "Lyon 6e", "quartier": "Tronchet / Foch", "site": "https://www.centresesam.fr/"}, {"nom": "Sesam Yoga Lyon 7", "lat": 45.7455, "lng": 4.8375, "arr": "Lyon 7e", "quartier": "Jean Macé", "site": "https://www.centresesam.fr/"}];
 const map = L.map('studios-map', { scrollWheelZoom: false }).setView([45.764, 4.842], 12);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap contributors', subdomains: 'abc', maxZoom: 19
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 16, attribution: '&copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
 }).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 16 }).addTo(map);
 MARKERS.forEach(m => {
-  L.circleMarker([m.lat, m.lng], { radius: 9, color: '#ffffff', weight: 2, fillColor: '#2c1c3d', fillOpacity: 1 })
+  L.circleMarker([m.lat, m.lng], { radius: 14, stroke: false, fillColor: '#8a6aa8', fillOpacity: 0.28 }).addTo(map);
+  L.circleMarker([m.lat, m.lng], { radius: 7, color: '#ffffff', weight: 2, fillColor: '#2c1c3d', fillOpacity: 1 })
     .addTo(map)
     .bindPopup('<strong>' + m.nom + '</strong><br>' + m.quartier + ' (' + m.arr + ')');
 });

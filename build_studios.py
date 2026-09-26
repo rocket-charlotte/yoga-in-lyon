@@ -154,11 +154,13 @@ function filterArr(el, arr) {{
 <script>
 const MARKERS = {markers_json};
 const map = L.map('studios-map', {{ scrollWheelZoom: false }}).setView([45.764, 4.842], 12);
-L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
-  attribution: '&copy; OpenStreetMap contributors', subdomains: 'abc', maxZoom: 19
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{{z}}/{{y}}/{{x}}', {{
+  maxZoom: 16, attribution: '&copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
 }}).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{{z}}/{{y}}/{{x}}', {{ maxZoom: 16 }}).addTo(map);
 MARKERS.forEach(m => {{
-  L.circleMarker([m.lat, m.lng], {{ radius: 9, color: '#ffffff', weight: 2, fillColor: '#2c1c3d', fillOpacity: 1 }})
+  L.circleMarker([m.lat, m.lng], {{ radius: 14, stroke: false, fillColor: '#8a6aa8', fillOpacity: 0.28 }}).addTo(map);
+  L.circleMarker([m.lat, m.lng], {{ radius: 7, color: '#ffffff', weight: 2, fillColor: '#2c1c3d', fillOpacity: 1 }})
     .addTo(map)
     .bindPopup('<strong>' + m.nom + '</strong><br>' + m.quartier + ' (' + m.arr + ')');
 }});

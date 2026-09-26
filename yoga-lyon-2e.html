@@ -118,6 +118,15 @@
     footer.site-footer .wordmark { font-size: 34px; }
   }
 
+  /* Habillage des cartes Leaflet pour matcher la charte du site */
+  .leaflet-container { font-family: 'Inter', sans-serif; background: #f4f1f7 !important; }
+  .leaflet-popup-content-wrapper { border-radius: 14px; box-shadow: 0 12px 28px rgba(65,41,87,0.22); }
+  .leaflet-popup-content { margin: 14px 16px; font-size: 13.5px; line-height: 1.5; color: var(--ink); }
+  .leaflet-popup-content strong { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 600; color: var(--brand-purple); }
+  .leaflet-popup-content a { font-weight: 600; }
+  .leaflet-popup-tip { box-shadow: 0 6px 14px rgba(65,41,87,0.15); }
+  .leaflet-control-zoom a { color: var(--brand-purple) !important; border-radius: 8px !important; }
+
 
   .quartier-hero { max-width: 1180px; margin: 0 auto; padding: 56px 24px 10px; }
   .quartier-hero .eyebrow { font-size: 12px; font-weight: 700; color: #9B7FB0; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
@@ -262,11 +271,13 @@ const MARKERS = [{"nom": "Latitude Yoga", "lat": 45.7525, "lng": 4.8265}, {"nom"
 const map = L.map('quartier-map', { scrollWheelZoom: false }).setView(
   MARKERS.length ? [MARKERS[0].lat, MARKERS[0].lng] : [45.764, 4.842], 13
 );
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap contributors', subdomains: 'abc', maxZoom: 19
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 16, attribution: '&copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
 }).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 16 }).addTo(map);
 MARKERS.forEach(m => {
-  L.circleMarker([m.lat, m.lng], { radius: 9, color: '#ffffff', weight: 2, fillColor: '#2c1c3d', fillOpacity: 1 })
+  L.circleMarker([m.lat, m.lng], { radius: 14, stroke: false, fillColor: '#8a6aa8', fillOpacity: 0.28 }).addTo(map);
+  L.circleMarker([m.lat, m.lng], { radius: 7, color: '#ffffff', weight: 2, fillColor: '#2c1c3d', fillOpacity: 1 })
     .addTo(map)
     .bindPopup('<strong>' + m.nom + '</strong>');
 });

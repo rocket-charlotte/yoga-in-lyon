@@ -270,6 +270,15 @@ BASE_CSS = """
     footer.site-footer { padding: 44px 20px 24px; }
     footer.site-footer .wordmark { font-size: 34px; }
   }
+
+  /* Habillage des cartes Leaflet pour matcher la charte du site */
+  .leaflet-container { font-family: 'Inter', sans-serif; background: #f4f1f7 !important; }
+  .leaflet-popup-content-wrapper { border-radius: 14px; box-shadow: 0 12px 28px rgba(65,41,87,0.22); }
+  .leaflet-popup-content { margin: 14px 16px; font-size: 13.5px; line-height: 1.5; color: var(--ink); }
+  .leaflet-popup-content strong { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 600; color: var(--brand-purple); }
+  .leaflet-popup-content a { font-weight: 600; }
+  .leaflet-popup-tip { box-shadow: 0 6px 14px rgba(65,41,87,0.15); }
+  .leaflet-control-zoom a { color: var(--brand-purple) !important; border-radius: 8px !important; }
 """
 
 

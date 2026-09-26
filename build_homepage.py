@@ -445,15 +445,20 @@ function submitNewsletter(e) {{
 const MARKERS = {markers_json};
 
 const map = L.map('map', {{ scrollWheelZoom: false }}).setView([45.764, 4.835], 12);
-L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
-  maxZoom: 19,
-  subdomains: 'abc',
-  attribution: '&copy; OpenStreetMap contributors'
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{{z}}/{{y}}/{{x}}', {{
+  maxZoom: 16,
+  attribution: '&copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
+}}).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{{z}}/{{y}}/{{x}}', {{
+  maxZoom: 16
 }}).addTo(map);
 
 const purpleIcon = L.divIcon({{
   className: 'custom-marker',
-  html: '<div style="background:#2c1c3d;width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>',
+  html: '<div style="position:relative;width:16px;height:16px;">'
+      + '<div style="position:absolute;top:-7px;left:-7px;width:30px;height:30px;border-radius:50%;background:rgba(138,106,168,0.28);"></div>'
+      + '<div style="position:relative;background:#2c1c3d;width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>'
+      + '</div>',
   iconSize: [16,16],
   iconAnchor: [8,8]
 }});
