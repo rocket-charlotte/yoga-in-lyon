@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studios de yoga à Lyon — Annuaire | Yoga In Lyon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<style>
+
+  :root {
+    --bg: #FFFBFC;
+    --card: #ffffff;
+    --ink: #241A2E;
+    --muted: #7A6690;
+    --muted-soft: #9885a8;
+    --lavender: #D9C6EC;
+    --lavender-soft: #F1E9F9;
+    --lavender-dark: #412957;
+    --lavender-accent: #6a4a8c;
+    --border: #EAE1F2;
+    --pill-radius: 999px;
+    --brand-purple: #412957;
+    --footer-bg: #2c1c3d;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Inter', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--ink); }
+  h1, h2, h3, .day-title, .brand-word { font-family: 'Fraunces', Georgia, serif; }
+  a { color: var(--lavender-dark); text-decoration: none; }
+  a:hover { color: var(--lavender-accent); }
+  input[type="checkbox"] { accent-color: var(--lavender-dark); width: 16px; height: 16px; cursor: pointer; }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 48px;
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,251,252,0.92);
+  }
+  .site-header .brand { font-size: 22px; font-weight: 600; color: var(--brand-purple); font-family: 'Fraunces', serif; }
+  .site-header nav { display: flex; align-items: center; gap: 26px; flex-wrap: wrap; }
+  .site-header nav a { font-size: 15px; font-weight: 500; color: var(--brand-purple); opacity: 0.75; }
+  .site-header nav a:hover { opacity: 1; }
+  .site-header nav a.active { opacity: 1; border-bottom: 2px solid var(--brand-purple); padding-bottom: 3px; }
+  .site-header nav a.pill-cta {
+    font-weight: 600; padding: 10px 22px; border-radius: var(--pill-radius);
+    background: var(--brand-purple); color: #FBF8F4; opacity: 1;
+  }
+  .site-header nav a.pill-cta:hover { background: var(--lavender-accent); }
+  @media (max-width: 820px) {
+    .site-header { padding: 14px 18px; }
+    .site-header nav { gap: 12px; }
+    .site-header nav a:not(.pill-cta) { display: none; }
+  }
+
+  .search-bar-wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 5; }
+  .search-bar {
+    background: var(--card); border-radius: 18px; box-shadow: 0 12px 32px rgba(65,41,87,0.14);
+    display: flex; flex-wrap: wrap; align-items: end; gap: 18px; padding: 22px 26px;
+  }
+  .search-seg { flex: 1 1 160px; display: flex; flex-direction: column; gap: 6px; min-width: 140px; }
+  .search-seg label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .search-seg select {
+    border: none; border-bottom: 2px solid var(--border); padding: 8px 0 8px 0;
+    font-size: 15px; background: transparent; font-family: 'Inter', sans-serif; color: var(--ink);
+    cursor: pointer; outline: none; width: 100%;
+  }
+  .search-seg select:focus { border-bottom-color: var(--lavender-dark); }
+  .search-btn {
+    flex: 0 0 auto; padding: 13px 26px; border-radius: var(--pill-radius); border: none;
+    background: var(--brand-purple); color: #FBF8F4; font-size: 14.5px; font-weight: 600;
+    cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap;
+  }
+  .search-btn:hover { background: var(--lavender-accent); }
+  @media (max-width: 700px) {
+    .search-bar { border-radius: 20px; padding: 16px; }
+    .search-btn { width: 100%; }
+  }
+
+  footer.site-footer { background: var(--footer-bg); color: #e9e1f1; padding: 64px 48px 28px; margin-top: 0; }
+  footer.site-footer .inner { max-width: 1180px; margin: 0 auto; }
+  footer.site-footer .top-row {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 24px;
+    padding-bottom: 44px; border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+  footer.site-footer .contact-block { display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: #cbb8dd; }
+  footer.site-footer .wordmark { font-family: 'Fraunces', serif; font-size: 52px; font-weight: 600; color: #FBF8F4; line-height: 1; }
+  footer.site-footer .mid-row {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 32px; padding: 36px 0;
+  }
+  footer.site-footer .tagline { font-size: 14px; color: #B79FCB; max-width: 280px; line-height: 1.5; }
+  footer.site-footer .nav-col { display: flex; flex-direction: column; gap: 10px; }
+  footer.site-footer .nav-col .head { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #FBF8F4; }
+  footer.site-footer .nav-col a { color: #cbb8dd; font-size: 14px; }
+  footer.site-footer .nav-col a:hover { color: #fff; }
+  footer.site-footer .cta-btn {
+    padding: 13px 28px; border-radius: var(--pill-radius); background: #FBF8F4; color: var(--brand-purple);
+    font-size: 14px; font-weight: 600; align-self: flex-start;
+  }
+  footer.site-footer .bottom { text-align: center; font-size: 12.5px; color: #8a76a0; padding-top: 20px; }
+  @media (max-width: 700px) {
+    footer.site-footer { padding: 44px 20px 24px; }
+    footer.site-footer .wordmark { font-size: 34px; }
+  }
+
+
+  .studios-header { max-width: 1180px; margin: 0 auto; padding: 56px 24px 20px; }
+  .studios-header h1 { font-size: 32px; font-weight: 500; margin: 0 0 10px; }
+  .studios-header p { color: #6a5a78; font-size: 16px; margin: 0; }
+
+  .map-section { max-width: 1180px; margin: 0 auto; padding: 20px 24px 30px; }
+  #studios-map { width: 100%; height: 380px; border-radius: 18px; overflow: hidden; background: var(--border); }
+
+  .arr-pills { max-width: 1180px; margin: 0 auto; padding: 0 24px 24px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .arr-pill { padding: 9px 18px; border-radius: var(--pill-radius); font-size: 13.5px; font-weight: 600; cursor: pointer;
+    border: 1px solid var(--lavender); background: #fff; color: var(--brand-purple); font-family: 'Inter', sans-serif; }
+  .arr-pill.active { background: var(--brand-purple); color: #FBF8F4; border-color: var(--brand-purple); }
+  .arr-pill:hover:not(.active) { border-color: var(--brand-purple); }
+
+  .studios-grid-wrap { max-width: 1180px; margin: 0 auto; padding: 20px 24px 70px; }
+  .studios-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; }
+  .studio-card { background: #fff; border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; }
+  .studio-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(65,41,87,0.12); }
+  .studio-photo { width: 100%; height: 170px; display: flex; align-items: center; justify-content: center; }
+  .studio-photo span { font-size: 3em; }
+  .studio-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .studio-name { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; }
+  .studio-quartier { font-size: 12.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .studio-desc { font-size: 14px; color: #5a4a68; line-height: 1.5; margin: 0; }
+  .studio-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+  .style-badge { font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: var(--pill-radius); background: var(--lavender-soft); color: var(--brand-purple); }
+  .studio-link { font-size: 14px; font-weight: 600; margin-top: 8px; }
+
+  .cta-manage { background: var(--lavender-soft); padding: 56px 24px; text-align: center; }
+  .cta-manage .inner { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .cta-manage h2 { font-size: 24px; font-weight: 500; margin: 0; }
+  .cta-manage p { font-size: 14.5px; color: #6a5a78; margin: 0; }
+  .cta-manage a { padding: 13px 28px; border-radius: var(--pill-radius); background: var(--brand-purple); color: #FBF8F4; font-size: 14.5px; font-weight: 600; }
+  .cta-manage a:hover { color: #fff; opacity: 0.9; }
+
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="Accueil.html" class="brand">Yoga in Lyon</a>
+  <nav>
+    <a href="Accueil.html" class="">Accueil</a>
+    <a href="Studios.html" class="active">Studios</a>
+    <a href="Profs.html" class="">Profs</a>
+    <a href="A-propos.html" class="">Qui sommes-nous</a>
+    <a href="Yoga_a_Lyon_Planning.html" class="pill-cta">Voir le planning</a>
+  </nav>
+</header>
+
+<div class="studios-header">
+  <h1>Trouver un studio de yoga à Lyon</h1>
+  <p>Studios, quartiers et styles enseignés — pour choisir avant de regarder les horaires.</p>
+</div>
+
+<div class="map-section">
+  <div id="studios-map"></div>
+</div>
+
+<div class="arr-pills" id="arr-pills">
+  <button type="button" class="arr-pill active" onclick="filterArr(this, '')">Tous</button><button type="button" class="arr-pill" onclick="filterArr(this, 'Lyon 1er')">Lyon 1er</button><button type="button" class="arr-pill" onclick="filterArr(this, 'Lyon 2e')">Lyon 2e</button><button type="button" class="arr-pill" onclick="filterArr(this, 'Lyon 3e')">Lyon 3e</button><button type="button" class="arr-pill" onclick="filterArr(this, 'Lyon 4e')">Lyon 4e</button><button type="button" class="arr-pill" onclick="filterArr(this, 'Lyon 5e')">Lyon 5e</button><button type="button" class="arr-pill" onclick="filterArr(this, 'Lyon 6e')">Lyon 6e</button><button type="button" class="arr-pill" onclick="filterArr(this, 'Lyon 7e')">Lyon 7e</button><button type="button" class="arr-pill" onclick="filterArr(this, 'Lyon 8e')">Lyon 8e</button><button type="button" class="arr-pill" onclick="filterArr(this, 'Lyon 9e')">Lyon 9e</button><button type="button" class="arr-pill" onclick="filterArr(this, 'Villeurbanne')">Villeurbanne</button>
+</div>
+
+<div class="studios-grid-wrap">
+  <div class="studios-grid" id="studios-grid">
+    
+      <div class="studio-card" data-arr="Lyon 1er">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #e8c9c2, #c9a6d6);"><span>🧘‍♀️</span></div>
+        <div class="studio-body">
+          <div class="studio-name">École de Yoga Horizon</div>
+          <div class="studio-quartier">Croix-Rousse (pentes) · Lyon 1er</div>
+          <p class="studio-desc">10 créneaux vérifiés par semaine · Hatha Yoga, Pranayama & Nidra, Yin Yoga</p>
+          <div class="studio-badges"><span class="style-badge">Hatha Yoga</span><span class="style-badge">Pranayama & Nidra</span><span class="style-badge">Yin Yoga</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=École%20de%20Yoga%20Horizon" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 1er">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #b7cfc2, #8fb8a8);"><span>🪢</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Multifa</div>
+          <div class="studio-quartier">Croix-Rousse · Lyon 1er</div>
+          <p class="studio-desc">3 créneaux vérifiés par semaine · Hatha Yoga, Yoga Vinyasa</p>
+          <div class="studio-badges"><span class="style-badge">Hatha Yoga</span><span class="style-badge">Yoga Vinyasa</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Multifa" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 1er">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #f0d9a8, #cdbdf5);"><span>🌿</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Karan Anand Nathalie</div>
+          <div class="studio-quartier">Cours donnés Lyon 7e / Caluire · Lyon 1er</div>
+          <p class="studio-desc">4 créneaux vérifiés par semaine · Yoga Kundalini, Yoga Vinyasa</p>
+          <div class="studio-badges"><span class="style-badge">Yoga Kundalini</span><span class="style-badge">Yoga Vinyasa</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Karan%20Anand%20Nathalie" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 2e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #c2d6e8, #a6b8d6);"><span>🧘</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Latitude Yoga</div>
+          <div class="studio-quartier">Ainay · Lyon 2e</div>
+          <p class="studio-desc">6 créneaux vérifiés par semaine · Hatha Yoga</p>
+          <div class="studio-badges"><span class="style-badge">Hatha Yoga</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Latitude%20Yoga" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 2e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #e8c2d6, #d6a6c9);"><span>🕉️</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Yoga Bellecour</div>
+          <div class="studio-quartier">Bellecour · Lyon 2e</div>
+          <p class="studio-desc">Un studio historique en plein cœur de la Presqu'île : Hatha yoga traditionnel, le même professeur toute la saison, des groupes à taille humaine.</p>
+          <div class="studio-badges"><span class="style-badge">Hatha Yoga</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Yoga%20Bellecour" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 2e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #d6e8c2, #b8d6a6);"><span>🌸</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Samtosha Yoga - Patricia Heude</div>
+          <div class="studio-quartier">Cordeliers · Lyon 2e</div>
+          <p class="studio-desc">5 créneaux vérifiés par semaine · Hatha Yoga</p>
+          <div class="studio-badges"><span class="style-badge">Hatha Yoga</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Samtosha%20Yoga%20-%20Patricia%20Heude" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 2e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #dcc2e8, #b8a6d6);"><span>🌙</span></div>
+        <div class="studio-body">
+          <div class="studio-name">École de Yoga de Mysore (Ashtanga)</div>
+          <div class="studio-quartier">Ainay · Lyon 2e</div>
+          <p class="studio-desc">2 créneaux vérifiés par semaine · Pranayama & Nidra, Yin Yoga</p>
+          <div class="studio-badges"><span class="style-badge">Pranayama & Nidra</span><span class="style-badge">Yin Yoga</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=École%20de%20Yoga%20de%20Mysore%20(Ashtanga)" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 3e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #e8d2c2, #d6b8a6);"><span>☀️</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Studio Arbol Flow</div>
+          <div class="studio-quartier">Part-Dieu / Garibaldi · Lyon 3e</div>
+          <p class="studio-desc">7 créneaux vérifiés par semaine · Yoga Vinyasa</p>
+          <div class="studio-badges"><span class="style-badge">Yoga Vinyasa</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Studio%20Arbol%20Flow" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 4e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #e8c9c2, #c9a6d6);"><span>🍃</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Centre Tao Yoga</div>
+          <div class="studio-quartier">Croix-Rousse · Lyon 4e</div>
+          <p class="studio-desc">9 créneaux vérifiés par semaine · Hatha Yoga, Yoga Kundalini</p>
+          <div class="studio-badges"><span class="style-badge">Hatha Yoga</span><span class="style-badge">Yoga Kundalini</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Centre%20Tao%20Yoga" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 4e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #b7cfc2, #8fb8a8);"><span>✨</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Centre de Yoga Iyengar Croix-Rousse</div>
+          <div class="studio-quartier">Croix-Rousse · Lyon 4e</div>
+          <p class="studio-desc">Une méthode précise et progressive, avec accessoires (briques, sangles, chaises) pour adapter chaque posture. Cours pour tous niveaux.</p>
+          <div class="studio-badges"><span class="style-badge">Yoga Iyengar</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Centre%20de%20Yoga%20Iyengar%20Croix-Rousse" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 4e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #f0d9a8, #cdbdf5);"><span>🧘‍♀️</span></div>
+        <div class="studio-body">
+          <div class="studio-name">L'Atelier du Yoga</div>
+          <div class="studio-quartier">Croix-Rousse · Lyon 4e</div>
+          <p class="studio-desc">3 créneaux vérifiés par semaine · Hatha Yoga</p>
+          <div class="studio-badges"><span class="style-badge">Hatha Yoga</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=L'Atelier%20du%20Yoga" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 3e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #c2d6e8, #a6b8d6);"><span>🪢</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Yoga Room - Les Halles</div>
+          <div class="studio-quartier">Les Halles / Part-Dieu · Lyon 3e</div>
+          <p class="studio-desc">29 créneaux vérifiés par semaine · Ashtanga, Hatha Yoga, Hot Yoga</p>
+          <div class="studio-badges"><span class="style-badge">Ashtanga</span><span class="style-badge">Hatha Yoga</span><span class="style-badge">Hot Yoga</span><span class="style-badge">Renfo & Pilates</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Yoga%20Room%20-%20Les%20Halles" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 4e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #e8c2d6, #d6a6c9);"><span>🌿</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Yeahga (Espace holistique)</div>
+          <div class="studio-quartier">Croix-Rousse · Lyon 4e</div>
+          <p class="studio-desc">Ouvert fin 2024 à la Croix-Rousse : Vinyasa, Hatha, Yin, yoga doux et ateliers bien-être dans un lieu intimiste.</p>
+          <div class="studio-badges"><span class="style-badge">Hatha Yoga</span><span class="style-badge">Renfo & Pilates</span><span class="style-badge">Yin Yoga</span><span class="style-badge">Yoga Vinyasa</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Yeahga%20(Espace%20holistique)" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 1er">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #d6e8c2, #b8d6a6);"><span>🧘</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Yoga Korner</div>
+          <div class="studio-quartier">Lyon 1er · Lyon 1er</div>
+          <p class="studio-desc">27 créneaux vérifiés par semaine · Ashtanga, Hatha Yoga, Yin Yoga</p>
+          <div class="studio-badges"><span class="style-badge">Ashtanga</span><span class="style-badge">Hatha Yoga</span><span class="style-badge">Yin Yoga</span><span class="style-badge">Yoga Vinyasa</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Yoga%20Korner" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 5e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #dcc2e8, #b8a6d6);"><span>🕉️</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Yoga by Valérie Maurel (Saône & Soi)</div>
+          <div class="studio-quartier">Vieux Lyon · Lyon 5e</div>
+          <p class="studio-desc">1 créneau vérifié par semaine · Hatha Yoga</p>
+          <div class="studio-badges"><span class="style-badge">Hatha Yoga</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Yoga%20by%20Valérie%20Maurel%20(Saône%20%26%20Soi)" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 7e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #e8d2c2, #d6b8a6);"><span>🌸</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Cocon Yoga - Le Cocon</div>
+          <div class="studio-quartier">Jean Macé · Lyon 7e</div>
+          <p class="studio-desc">27 créneaux vérifiés par semaine · Ashtanga, Hatha Yoga, Renfo & Pilates</p>
+          <div class="studio-badges"><span class="style-badge">Ashtanga</span><span class="style-badge">Hatha Yoga</span><span class="style-badge">Renfo & Pilates</span><span class="style-badge">Yin Yoga</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Cocon%20Yoga%20-%20Le%20Cocon" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 7e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #e8c9c2, #c9a6d6);"><span>🌙</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Cocon Yoga - Oblique</div>
+          <div class="studio-quartier">Saxe-Gambetta · Lyon 7e</div>
+          <p class="studio-desc">7 créneaux vérifiés par semaine · Ashtanga, Hatha Yoga, Yoga Vinyasa</p>
+          <div class="studio-badges"><span class="style-badge">Ashtanga</span><span class="style-badge">Hatha Yoga</span><span class="style-badge">Yoga Vinyasa</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Cocon%20Yoga%20-%20Oblique" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 8e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #b7cfc2, #8fb8a8);"><span>☀️</span></div>
+        <div class="studio-body">
+          <div class="studio-name">GOTAMYOGA</div>
+          <div class="studio-quartier">Monplaisir / Laënnec · Lyon 8e</div>
+          <p class="studio-desc">11 créneaux vérifiés par semaine · Ashtanga, Hatha Yoga, Yin Yoga</p>
+          <div class="studio-badges"><span class="style-badge">Ashtanga</span><span class="style-badge">Hatha Yoga</span><span class="style-badge">Yin Yoga</span><span class="style-badge">Yoga Vinyasa</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=GOTAMYOGA" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 9e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #f0d9a8, #cdbdf5);"><span>🍃</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Pranam Yoga</div>
+          <div class="studio-quartier">Vaise · Lyon 9e</div>
+          <p class="studio-desc">3 créneaux vérifiés par semaine · Hatha Yoga</p>
+          <div class="studio-badges"><span class="style-badge">Hatha Yoga</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Pranam%20Yoga" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Villeurbanne">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #c2d6e8, #a6b8d6);"><span>✨</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Vima Yoga</div>
+          <div class="studio-quartier">Gratte-Ciel · Villeurbanne</div>
+          <p class="studio-desc">21 créneaux vérifiés par semaine · Hatha Yoga, Pranayama & Nidra, Yin Yoga</p>
+          <div class="studio-badges"><span class="style-badge">Hatha Yoga</span><span class="style-badge">Pranayama & Nidra</span><span class="style-badge">Yin Yoga</span><span class="style-badge">Yoga Vinyasa</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Vima%20Yoga" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 6e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #e8c2d6, #d6a6c9);"><span>🧘‍♀️</span></div>
+        <div class="studio-body">
+          <div class="studio-name">The Good Flow</div>
+          <div class="studio-quartier">Part-Dieu / Brotteaux · Lyon 6e</div>
+          <p class="studio-desc">16 créneaux vérifiés par semaine · Hatha Yoga, Pranayama & Nidra, Yin Yoga</p>
+          <div class="studio-badges"><span class="style-badge">Hatha Yoga</span><span class="style-badge">Pranayama & Nidra</span><span class="style-badge">Yin Yoga</span><span class="style-badge">Yoga Kundalini</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=The%20Good%20Flow" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 6e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #d6e8c2, #b8d6a6);"><span>🪢</span></div>
+        <div class="studio-body">
+          <div class="studio-name">O Yoga Studio</div>
+          <div class="studio-quartier">Foch / Parc Tête d'Or · Lyon 6e</div>
+          <p class="studio-desc">6 créneaux vérifiés par semaine · Ashtanga, Hatha Yoga, Yoga Vinyasa</p>
+          <div class="studio-badges"><span class="style-badge">Ashtanga</span><span class="style-badge">Hatha Yoga</span><span class="style-badge">Yoga Vinyasa</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=O%20Yoga%20Studio" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 6e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #dcc2e8, #b8a6d6);"><span>🌿</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Les Ailes Hatha Yoga</div>
+          <div class="studio-quartier">Brotteaux · Lyon 6e</div>
+          <p class="studio-desc">4 créneaux vérifiés par semaine · Hatha Yoga</p>
+          <div class="studio-badges"><span class="style-badge">Hatha Yoga</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Les%20Ailes%20Hatha%20Yoga" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 6e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #e8d2c2, #d6b8a6);"><span>🧘</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Yoga Dojo Lyon Massena</div>
+          <div class="studio-quartier">Brotteaux · Lyon 6e</div>
+          <p class="studio-desc">30 créneaux vérifiés par semaine · Ashtanga, Hatha Yoga, Pranayama & Nidra</p>
+          <div class="studio-badges"><span class="style-badge">Ashtanga</span><span class="style-badge">Hatha Yoga</span><span class="style-badge">Pranayama & Nidra</span><span class="style-badge">Yin Yoga</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Yoga%20Dojo%20Lyon%20Massena" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 6e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #e8c9c2, #c9a6d6);"><span>🕉️</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Sesam Yoga Lyon 6</div>
+          <div class="studio-quartier">Tronchet / Foch · Lyon 6e</div>
+          <p class="studio-desc">15 créneaux vérifiés par semaine · Ashtanga, Hatha Yoga, Yin Yoga</p>
+          <div class="studio-badges"><span class="style-badge">Ashtanga</span><span class="style-badge">Hatha Yoga</span><span class="style-badge">Yin Yoga</span><span class="style-badge">Yoga Kundalini</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Sesam%20Yoga%20Lyon%206" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+      <div class="studio-card" data-arr="Lyon 7e">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #b7cfc2, #8fb8a8);"><span>🌸</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Sesam Yoga Lyon 7</div>
+          <div class="studio-quartier">Jean Macé · Lyon 7e</div>
+          <p class="studio-desc">20 créneaux vérifiés par semaine · Ashtanga, Hatha Yoga, Pranayama & Nidra</p>
+          <div class="studio-badges"><span class="style-badge">Ashtanga</span><span class="style-badge">Hatha Yoga</span><span class="style-badge">Pranayama & Nidra</span><span class="style-badge">Yin Yoga</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Sesam%20Yoga%20Lyon%207" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
+  </div>
+</div>
+
+<div class="cta-manage">
+  <div class="inner">
+    <h2>Vous gérez un studio ?</h2>
+    <p>Pour ajouter, corriger ou mettre à jour les informations de votre studio, contactez-nous.</p>
+    <a href="A-propos.html#contact">Nous contacter</a>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="inner">
+    <div class="top-row">
+      <div class="contact-block">
+        <div>contact@yoga-in-lyon.fr</div>
+        <div>Lyon, France</div>
+      </div>
+      <div class="wordmark">Yoga in Lyon</div>
+    </div>
+    <div class="mid-row">
+      <div class="tagline">L'annuaire de référence des studios et cours de yoga à Lyon.</div>
+      <div class="nav-col">
+        <div class="head">Navigation</div>
+        <a href="Accueil.html">Accueil</a>
+        <a href="Studios.html">Studios</a>
+        <a href="Profs.html">Profs</a>
+        <a href="A-propos.html">Qui sommes-nous</a>
+        <a href="Yoga_a_Lyon_Planning.html">Planning</a>
+      </div>
+      <div class="nav-col">
+        <div class="head">Réseaux</div>
+        <a href="#">Instagram</a>
+        <a href="#">Facebook</a>
+      </div>
+      <a href="Yoga_a_Lyon_Planning.html" class="cta-btn">Trouver un cours</a>
+    </div>
+    <div class="bottom">L'annuaire du yoga à Lyon · 2026</div>
+  </div>
+</footer>
+
+<script>
+function filterArr(el, arr) {
+  document.querySelectorAll('.arr-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.studio-card').forEach(card => {
+    card.style.display = (!arr || card.dataset.arr === arr) ? '' : 'none';
+  });
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const MARKERS = [{"nom": "École de Yoga Horizon", "lat": 45.7706, "lng": 4.8291, "arr": "Lyon 1er", "quartier": "Croix-Rousse (pentes)", "site": "https://www.yoga-horizon.fr/activites/cours-de-yoga/cours-yoga-lyon-1/"}, {"nom": "Multifa", "lat": 45.769, "lng": 4.8275, "arr": "Lyon 1er", "quartier": "Croix-Rousse", "site": "https://multifa.fr/"}, {"nom": "Karan Anand Nathalie", "lat": 45.746, "lng": 4.832, "arr": "Lyon 1er", "quartier": "Cours donnés Lyon 7e / Caluire", "site": "https://www.karananandnathalie.com/"}, {"nom": "Latitude Yoga", "lat": 45.7525, "lng": 4.8265, "arr": "Lyon 2e", "quartier": "Ainay", "site": "https://www.latitudeyoga.com/planning-/"}, {"nom": "Yoga Bellecour", "lat": 45.76, "lng": 4.833, "arr": "Lyon 2e", "quartier": "Bellecour", "site": "https://yoga-bellecour.com/horaires-tarifs/"}, {"nom": "Samtosha Yoga - Patricia Heude", "lat": 45.7615, "lng": 4.8325, "arr": "Lyon 2e", "quartier": "Cordeliers", "site": "http://www.samtosha-yoga.fr/"}, {"nom": "École de Yoga de Mysore (Ashtanga)", "lat": 45.7528, "lng": 4.8268, "arr": "Lyon 2e", "quartier": "Ainay", "site": "http://www.yoga-ashtanga.com/"}, {"nom": "Studio Arbol Flow", "lat": 45.7592, "lng": 4.8415, "arr": "Lyon 3e", "quartier": "Part-Dieu / Garibaldi", "site": "https://arbolflow.com/planning-arbolflow/"}, {"nom": "Centre Tao Yoga", "lat": 45.7738, "lng": 4.8283, "arr": "Lyon 4e", "quartier": "Croix-Rousse", "site": "http://centretaoyoga.fr/planning/"}, {"nom": "Centre de Yoga Iyengar Croix-Rousse", "lat": 45.7728, "lng": 4.8296, "arr": "Lyon 4e", "quartier": "Croix-Rousse", "site": "https://www.yogaiyengar-lyon.com/cours-planning.html"}, {"nom": "L'Atelier du Yoga", "lat": 45.7718, "lng": 4.8302, "arr": "Lyon 4e", "quartier": "Croix-Rousse", "site": "http://www.atelier-du-yoga.fr/"}, {"nom": "Yoga Room - Les Halles", "lat": 45.7618, "lng": 4.8478, "arr": "Lyon 3e", "quartier": "Les Halles / Part-Dieu", "site": "https://www.yoga-room.fr/schedule"}, {"nom": "Yeahga (Espace holistique)", "lat": 45.7738, "lng": 4.827, "arr": "Lyon 4e", "quartier": "Croix-Rousse", "site": "https://www.yeahga.fr/nos-cours"}, {"nom": "Yoga Korner", "lat": 45.768, "lng": 4.833, "arr": "Lyon 1er", "quartier": "Lyon 1er", "site": "http://yogakorner.fr/"}, {"nom": "Yoga by Valérie Maurel (Saône & Soi)", "lat": 45.7645, "lng": 4.8195, "arr": "Lyon 5e", "quartier": "Vieux Lyon", "site": "https://www.yogabyvaleriemaurel.com/cours-yoga-lyon-5-vieux-lyon/"}, {"nom": "Cocon Yoga - Le Cocon", "lat": 45.7448, "lng": 4.8398, "arr": "Lyon 7e", "quartier": "Jean Macé", "site": "https://coconyoga.com/planning"}, {"nom": "Cocon Yoga - Oblique", "lat": 45.7469, "lng": 4.8362, "arr": "Lyon 7e", "quartier": "Saxe-Gambetta", "site": "https://coconyoga.com/planning"}, {"nom": "GOTAMYOGA", "lat": 45.7458, "lng": 4.858, "arr": "Lyon 8e", "quartier": "Monplaisir / Laënnec", "site": "https://www.gotamyoga.fr/"}, {"nom": "Pranam Yoga", "lat": 45.7699, "lng": 4.8047, "arr": "Lyon 9e", "quartier": "Vaise", "site": "https://pranam-yoga.fr/"}, {"nom": "Vima Yoga", "lat": 45.7665, "lng": 4.8807, "arr": "Villeurbanne", "quartier": "Gratte-Ciel", "site": "https://www.vima-yoga.com/"}, {"nom": "The Good Flow", "lat": 45.7645, "lng": 4.853, "arr": "Lyon 6e", "quartier": "Part-Dieu / Brotteaux", "site": "https://thegoodflow-yoga.com/studio-lyon-6"}, {"nom": "O Yoga Studio", "lat": 45.769, "lng": 4.848, "arr": "Lyon 6e", "quartier": "Foch / Parc Tête d'Or", "site": "https://www.oyogastudio.com/"}, {"nom": "Les Ailes Hatha Yoga", "lat": 45.7715, "lng": 4.8555, "arr": "Lyon 6e", "quartier": "Brotteaux", "site": "https://www.les-ailes.fr/"}, {"nom": "Yoga Dojo Lyon Massena", "lat": 45.7708, "lng": 4.854, "arr": "Lyon 6e", "quartier": "Brotteaux", "site": "https://yoga.dojolyon.fr/"}, {"nom": "Sesam Yoga Lyon 6", "lat": 45.7695, "lng": 4.85, "arr": "Lyon 6e", "quartier": "Tronchet / Foch", "site": "https://www.centresesam.fr/"}, {"nom": "Sesam Yoga Lyon 7", "lat": 45.7455, "lng": 4.8375, "arr": "Lyon 7e", "quartier": "Jean Macé", "site": "https://www.centresesam.fr/"}];
+const map = L.map('studios-map', { scrollWheelZoom: false }).setView([45.764, 4.842], 12);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd', maxZoom: 19
+}).addTo(map);
+MARKERS.forEach(m => {
+  L.circleMarker([m.lat, m.lng], { radius: 9, color: '#ffffff', weight: 2, fillColor: '#2c1c3d', fillOpacity: 1 })
+    .addTo(map)
+    .bindPopup('<strong>' + m.nom + '</strong><br>' + m.quartier + ' (' + m.arr + ')');
+});
+</script>
+
+</body>
+</html>
