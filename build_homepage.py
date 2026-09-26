@@ -115,6 +115,19 @@ PAGE_CSS = """
 
   .hero { position: relative; width: 100%; height: 62vh; min-height: 420px; overflow: hidden; }
   .hero img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; display: block; }
+  .hero .hero-scrim {
+    position: absolute; inset: 0; background: linear-gradient(0deg, rgba(36,20,46,0.55) 0%, rgba(36,20,46,0.05) 45%, transparent 70%);
+  }
+  .hero .hero-text { position: absolute; left: 48px; bottom: 40px; max-width: 640px; color: #FBF8F4; z-index: 2; }
+  .hero .hero-text h1 {
+    font-size: 44px; font-weight: 600; margin: 0 0 8px; line-height: 1.08;
+    text-shadow: 0 2px 18px rgba(0,0,0,0.35);
+  }
+  .hero .hero-text p { font-size: 16px; margin: 0; color: #EFE6F6; text-shadow: 0 1px 10px rgba(0,0,0,0.3); }
+  @media (max-width: 700px) {
+    .hero .hero-text { left: 20px; right: 20px; bottom: 24px; }
+    .hero .hero-text h1 { font-size: 28px; }
+  }
 
   .search-card-wrap { max-width: 1180px; margin: -64px auto 0; padding: 0 24px; position: relative; z-index: 10; }
   .search-card {
@@ -186,6 +199,16 @@ PAGE_CSS = """
   .review-author { font-size: 0.85em; font-weight: 700; }
   .review-source { font-size: 0.78em; color: var(--muted); margin-top: 2px; }
 
+  .quartiers-section { padding: 60px 24px 10px; text-align: center; }
+  .quartiers-section .inner { max-width: 900px; margin: 0 auto; }
+  .quartiers-section h2 { font-size: 26px; font-weight: 500; margin: 0 0 22px; }
+  .quartiers-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .quartiers-links a {
+    padding: 9px 18px; border-radius: 999px; background: var(--lavender-soft); color: var(--brand-purple);
+    font-size: 14px; font-weight: 600;
+  }
+  .quartiers-links a:hover { background: var(--lavender); }
+
   .cta-band { padding: 90px 24px; text-align: center; background-color: var(--brand-purple); color: #FFFFFC; }
   .cta-band .inner { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 22px; }
   .cta-band h2 { font-size: 36px; font-weight: 500; margin: 0; color: #FFDFFF; }
@@ -210,8 +233,14 @@ html_out = f"""<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Yoga In Lyon — L'annuaire des cours de yoga à Lyon</title>
+{sc.seo_head(
+    "Yoga In Lyon — L'annuaire des cours de yoga à Lyon",
+    f"Trouvez votre studio et votre cours de yoga à Lyon : {total_studios} studios vérifiés, {total_creneaux} créneaux par semaine, du 1er au 9e arrondissement et à Villeurbanne.",
+    "",
+)}
 {sc.FONTS_LINK}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script type="application/ld+json">{sc.website_jsonld()}</script>
 <style>
 {sc.BASE_CSS}
 {PAGE_CSS}
@@ -223,6 +252,11 @@ html_out = f"""<!DOCTYPE html>
 
 <section class="hero">
   <img src="banner_web.jpg" alt="Séance de yoga au bord de la Saône à Lyon">
+  <div class="hero-scrim"></div>
+  <div class="hero-text">
+    <h1>Yoga à Lyon : trouvez votre studio et votre cours</h1>
+    <p>{total_studios} studios vérifiés à la main · {total_creneaux} créneaux par semaine · du 1er au 9e arrondissement et à Villeurbanne</p>
+  </div>
 </section>
 
 <div class="search-card-wrap">
@@ -319,6 +353,15 @@ html_out = f"""<!DOCTYPE html>
       <p class="review-text">« Un yoga de qualité, une salle bien équipée, des groupes de niveaux, et des enseignants attentifs et bienveillants. »</p>
       <div class="review-author">Patricia L.</div>
       <div class="review-source">Avis Google — Centre de Yoga Iyengar Croix-Rousse</div>
+    </div>
+  </div>
+</section>
+
+<section class="quartiers-section">
+  <div class="inner">
+    <h2>Le yoga par quartier</h2>
+    <div class="quartiers-links">
+      {"".join(f'<a href="{sc.arr_page_filename(a)}">Yoga {a}</a>' for a in sc.all_arrondissements())}
     </div>
   </div>
 </section>

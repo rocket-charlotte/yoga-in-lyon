@@ -95,8 +95,14 @@ html_out = f"""<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Studios de yoga à Lyon — Annuaire | Yoga In Lyon</title>
+{sc.seo_head(
+    "Studios de yoga à Lyon — Annuaire | Yoga In Lyon",
+    f"L'annuaire des {len(studios)} studios de yoga à Lyon et Villeurbanne : adresse, quartier, styles enseignés et planning de chacun.",
+    "Studios.html",
+)}
 {sc.FONTS_LINK}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script type="application/ld+json">{sc.item_list_jsonld(studios)}</script>
 <style>
 {sc.BASE_CSS}
 {PAGE_CSS}

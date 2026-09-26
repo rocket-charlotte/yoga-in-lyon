@@ -47,6 +47,11 @@ html_out = f"""<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Qui sommes-nous — Yoga In Lyon</title>
+{sc.seo_head(
+    "Qui sommes-nous — Yoga In Lyon",
+    "Yoga In Lyon est un annuaire indépendant des studios et cours de yoga à Lyon, avec des créneaux vérifiés studio par studio.",
+    "A-propos.html",
+)}
 {sc.FONTS_LINK}
 <style>
 {sc.BASE_CSS}

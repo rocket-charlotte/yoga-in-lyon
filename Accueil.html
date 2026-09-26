@@ -4,9 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Yoga In Lyon — L'annuaire des cours de yoga à Lyon</title>
+<meta name="description" content="Trouvez votre studio et votre cours de yoga à Lyon : 26 studios vérifiés, 315 créneaux par semaine, du 1er au 9e arrondissement et à Villeurbanne.">
+<link rel="canonical" href="https://yoga-in-lyon.fr/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Yoga In Lyon">
+<meta property="og:title" content="Yoga In Lyon — L&#x27;annuaire des cours de yoga à Lyon">
+<meta property="og:description" content="Trouvez votre studio et votre cours de yoga à Lyon : 26 studios vérifiés, 315 créneaux par semaine, du 1er au 9e arrondissement et à Villeurbanne.">
+<meta property="og:image" content="https://yoga-in-lyon.fr/banner_web.jpg">
+<meta property="og:url" content="https://yoga-in-lyon.fr/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Yoga In Lyon — L&#x27;annuaire des cours de yoga à Lyon">
+<meta name="twitter:description" content="Trouvez votre studio et votre cours de yoga à Lyon : 26 studios vérifiés, 315 créneaux par semaine, du 1er au 9e arrondissement et à Villeurbanne.">
+<meta name="twitter:image" content="https://yoga-in-lyon.fr/banner_web.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "name": "Yoga In Lyon", "url": "https://yoga-in-lyon.fr/", "description": "Annuaire des studios et cours de yoga à Lyon et Villeurbanne, avec plannings vérifiés."}</script>
 <style>
 
   :root {
@@ -110,6 +123,19 @@
 
   .hero { position: relative; width: 100%; height: 62vh; min-height: 420px; overflow: hidden; }
   .hero img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; display: block; }
+  .hero .hero-scrim {
+    position: absolute; inset: 0; background: linear-gradient(0deg, rgba(36,20,46,0.55) 0%, rgba(36,20,46,0.05) 45%, transparent 70%);
+  }
+  .hero .hero-text { position: absolute; left: 48px; bottom: 40px; max-width: 640px; color: #FBF8F4; z-index: 2; }
+  .hero .hero-text h1 {
+    font-size: 44px; font-weight: 600; margin: 0 0 8px; line-height: 1.08;
+    text-shadow: 0 2px 18px rgba(0,0,0,0.35);
+  }
+  .hero .hero-text p { font-size: 16px; margin: 0; color: #EFE6F6; text-shadow: 0 1px 10px rgba(0,0,0,0.3); }
+  @media (max-width: 700px) {
+    .hero .hero-text { left: 20px; right: 20px; bottom: 24px; }
+    .hero .hero-text h1 { font-size: 28px; }
+  }
 
   .search-card-wrap { max-width: 1180px; margin: -64px auto 0; padding: 0 24px; position: relative; z-index: 10; }
   .search-card {
@@ -181,6 +207,16 @@
   .review-author { font-size: 0.85em; font-weight: 700; }
   .review-source { font-size: 0.78em; color: var(--muted); margin-top: 2px; }
 
+  .quartiers-section { padding: 60px 24px 10px; text-align: center; }
+  .quartiers-section .inner { max-width: 900px; margin: 0 auto; }
+  .quartiers-section h2 { font-size: 26px; font-weight: 500; margin: 0 0 22px; }
+  .quartiers-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .quartiers-links a {
+    padding: 9px 18px; border-radius: 999px; background: var(--lavender-soft); color: var(--brand-purple);
+    font-size: 14px; font-weight: 600;
+  }
+  .quartiers-links a:hover { background: var(--lavender); }
+
   .cta-band { padding: 90px 24px; text-align: center; background-color: var(--brand-purple); color: #FFFFFC; }
   .cta-band .inner { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 22px; }
   .cta-band h2 { font-size: 36px; font-weight: 500; margin: 0; color: #FFDFFF; }
@@ -215,6 +251,11 @@
 
 <section class="hero">
   <img src="banner_web.jpg" alt="Séance de yoga au bord de la Saône à Lyon">
+  <div class="hero-scrim"></div>
+  <div class="hero-text">
+    <h1>Yoga à Lyon : trouvez votre studio et votre cours</h1>
+    <p>26 studios vérifiés à la main · 315 créneaux par semaine · du 1er au 9e arrondissement et à Villeurbanne</p>
+  </div>
 </section>
 
 <div class="search-card-wrap">
@@ -358,6 +399,15 @@
       <p class="review-text">« Un yoga de qualité, une salle bien équipée, des groupes de niveaux, et des enseignants attentifs et bienveillants. »</p>
       <div class="review-author">Patricia L.</div>
       <div class="review-source">Avis Google — Centre de Yoga Iyengar Croix-Rousse</div>
+    </div>
+  </div>
+</section>
+
+<section class="quartiers-section">
+  <div class="inner">
+    <h2>Le yoga par quartier</h2>
+    <div class="quartiers-links">
+      <a href="yoga-villeurbanne.html">Yoga Villeurbanne</a><a href="yoga-lyon-1er.html">Yoga Lyon 1er</a><a href="yoga-lyon-2e.html">Yoga Lyon 2e</a><a href="yoga-lyon-3e.html">Yoga Lyon 3e</a><a href="yoga-lyon-4e.html">Yoga Lyon 4e</a><a href="yoga-lyon-5e.html">Yoga Lyon 5e</a><a href="yoga-lyon-6e.html">Yoga Lyon 6e</a><a href="yoga-lyon-7e.html">Yoga Lyon 7e</a><a href="yoga-lyon-8e.html">Yoga Lyon 8e</a><a href="yoga-lyon-9e.html">Yoga Lyon 9e</a>
     </div>
   </div>
 </section>

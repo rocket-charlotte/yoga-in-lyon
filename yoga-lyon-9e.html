@@ -3,21 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Qui sommes-nous — Yoga In Lyon</title>
-<meta name="description" content="Yoga In Lyon est un annuaire indépendant des studios et cours de yoga à Lyon, avec des créneaux vérifiés studio par studio.">
-<link rel="canonical" href="https://yoga-in-lyon.fr/A-propos.html">
+<title>Yoga à 9e arrondissement de Lyon — Studios et cours | Yoga In Lyon</title>
+<meta name="description" content="Cours de yoga à 9e arrondissement de Lyon : 1 studio vérifié, 3 créneaux par semaine (Hatha Yoga).">
+<link rel="canonical" href="https://yoga-in-lyon.fr/yoga-lyon-9e.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Yoga In Lyon">
-<meta property="og:title" content="Qui sommes-nous — Yoga In Lyon">
-<meta property="og:description" content="Yoga In Lyon est un annuaire indépendant des studios et cours de yoga à Lyon, avec des créneaux vérifiés studio par studio.">
+<meta property="og:title" content="Yoga à 9e arrondissement de Lyon — Studios et cours | Yoga In Lyon">
+<meta property="og:description" content="Cours de yoga à 9e arrondissement de Lyon : 1 studio vérifié, 3 créneaux par semaine (Hatha Yoga).">
 <meta property="og:image" content="https://yoga-in-lyon.fr/banner_web.jpg">
-<meta property="og:url" content="https://yoga-in-lyon.fr/A-propos.html">
+<meta property="og:url" content="https://yoga-in-lyon.fr/yoga-lyon-9e.html">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Qui sommes-nous — Yoga In Lyon">
-<meta name="twitter:description" content="Yoga In Lyon est un annuaire indépendant des studios et cours de yoga à Lyon, avec des créneaux vérifiés studio par studio.">
+<meta name="twitter:title" content="Yoga à 9e arrondissement de Lyon — Studios et cours | Yoga In Lyon">
+<meta name="twitter:description" content="Cours de yoga à 9e arrondissement de Lyon : 1 studio vérifié, 3 créneaux par semaine (Hatha Yoga).">
 <meta name="twitter:image" content="https://yoga-in-lyon.fr/banner_web.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "ItemList", "itemListElement": [{"@type": "ListItem", "position": 1, "item": {"@type": "ExerciseGym", "name": "Pranam Yoga", "address": "24 avenue Joannes Masset (Centre de la Voix), 69009 Lyon", "url": "https://pranam-yoga.fr/"}}]}</script>
 <style>
 
   :root {
@@ -117,37 +119,35 @@
   }
 
 
-  .apropos-hero { max-width: 1100px; margin: 0 auto; padding: 70px 24px 60px; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: center; }
-  @media (max-width: 780px) { .apropos-hero { grid-template-columns: 1fr; } }
-  .apropos-hero .eyebrow { font-size: 12px; font-weight: 700; color: #9B7FB0; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
-  .apropos-hero h1 { font-size: 38px; font-weight: 500; margin: 0 0 20px; }
-  .apropos-hero p { font-size: 16px; color: #4a3a58; line-height: 1.7; margin: 0 0 16px; }
-  .apropos-badges { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; }
-  .apropos-badges span { padding: 8px 16px; border-radius: var(--pill-radius); background: var(--lavender-soft); color: var(--brand-purple); font-size: 13px; font-weight: 600; }
-  .apropos-visual { position: relative; }
-  .apropos-visual .backdrop { position: absolute; top: -24px; right: -24px; width: 90%; height: 90%; border-radius: 32px; background: var(--lavender); z-index: 0; }
-  .apropos-visual .panel {
-    position: relative; z-index: 1; width: 100%; height: 340px; border-radius: 28px;
-    background: linear-gradient(135deg, #f0d9a8, #cdbdf5); display: flex; align-items: center; justify-content: center;
-  }
+  .quartier-hero { max-width: 1180px; margin: 0 auto; padding: 56px 24px 10px; }
+  .quartier-hero .eyebrow { font-size: 12px; font-weight: 700; color: #9B7FB0; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+  .quartier-hero h1 { font-size: 32px; font-weight: 500; margin: 0 0 14px; }
+  .quartier-hero p { color: #6a5a78; font-size: 16px; line-height: 1.6; max-width: 760px; margin: 0 0 18px; }
+  .quartier-hero .cta-btn { display: inline-block; padding: 13px 26px; border-radius: var(--pill-radius); background: var(--brand-purple); color: #FBF8F4; font-size: 14.5px; font-weight: 600; }
+  .quartier-hero .cta-btn:hover { color: #fff; opacity: 0.9; }
 
-  .contact-section { background: var(--lavender-soft); padding: 60px 24px; position: relative; overflow: hidden; }
-  .contact-section .deco { position: absolute; top: -20px; left: -20px; opacity: 0.5; }
-  .contact-section .inner { max-width: 560px; margin: 0 auto; position: relative; z-index: 1; }
-  .contact-section h2 { font-size: 26px; font-weight: 500; margin: 0 0 8px; text-align: center; }
-  .contact-section .sub { font-size: 14.5px; color: #6a5a78; margin: 0 0 28px; text-align: center; }
-  .contact-form { display: flex; flex-direction: column; gap: 14px; }
-  .contact-form input, .contact-form textarea {
-    padding: 13px 16px; border-radius: 12px; border: 1px solid var(--lavender); font-size: 14.5px;
-    background: #fff; font-family: 'Inter', sans-serif;
-  }
-  .contact-form textarea { resize: vertical; }
-  .contact-form button {
-    padding: 14px 0; border-radius: var(--pill-radius); border: none; background: var(--brand-purple);
-    color: #FBF8F4; font-weight: 600; font-size: 15px; cursor: pointer;
-  }
-  .contact-form button:hover { transform: scale(1.01); }
-  .form-thanks { text-align: center; font-size: 15px; color: var(--brand-purple); font-weight: 600; padding: 24px 0; display: none; }
+  .map-section { max-width: 1180px; margin: 0 auto; padding: 20px 24px 30px; }
+  #quartier-map { width: 100%; height: 320px; border-radius: 18px; overflow: hidden; background: var(--border); }
+
+  .studios-grid-wrap { max-width: 1180px; margin: 0 auto; padding: 10px 24px 70px; }
+  .studios-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; }
+  .studio-card { background: #fff; border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; }
+  .studio-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(65,41,87,0.12); }
+  .studio-photo { width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; }
+  .studio-photo span { font-size: 3em; }
+  .studio-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .studio-name { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; }
+  .studio-quartier { font-size: 12.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .studio-desc { font-size: 14px; color: #5a4a68; line-height: 1.5; margin: 0; }
+  .studio-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+  .style-badge { font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: var(--pill-radius); background: var(--lavender-soft); color: var(--brand-purple); }
+  .studio-link { font-size: 14px; font-weight: 600; margin-top: 8px; }
+
+  .other-quartiers { max-width: 1180px; margin: 0 auto; padding: 0 24px 70px; }
+  .other-quartiers h2 { font-size: 20px; font-weight: 500; margin: 0 0 16px; }
+  .other-quartiers .links { display: flex; flex-wrap: wrap; gap: 10px; }
+  .other-quartiers a { padding: 9px 18px; border-radius: 999px; background: var(--lavender-soft); color: var(--brand-purple); font-size: 13.5px; font-weight: 600; }
+  .other-quartiers a:hover { background: var(--lavender); }
 
 </style>
 </head>
@@ -157,48 +157,44 @@
   <a href="Accueil.html" class="brand">Yoga in Lyon</a>
   <nav>
     <a href="Accueil.html" class="">Accueil</a>
-    <a href="Studios.html" class="">Studios</a>
+    <a href="Studios.html" class="active">Studios</a>
     <a href="Profs.html" class="">Profs</a>
-    <a href="A-propos.html" class="active">Qui sommes-nous</a>
+    <a href="A-propos.html" class="">Qui sommes-nous</a>
     <a href="Yoga_a_Lyon_Planning.html" class="pill-cta">Voir le planning</a>
   </nav>
 </header>
 
-<section class="apropos-hero">
-  <div>
-    <div class="eyebrow">L'équipe</div>
-    <h1>Qui sommes-nous</h1>
-    <p>Yoga in Lyon est un annuaire indépendant né d'un constat simple : trouver un cours de yoga à l'horaire et dans le quartier qui nous convient prend souvent plus de temps que la séance elle-même.</p>
-    <p>Nous recensons les studios de Lyon un par un, avec leurs créneaux réels, pour vous éviter d'ouvrir dix onglets avant de dérouler votre tapis.</p>
-    <p>Le site est encore jeune : 26 studios référencés à ce jour, du 1er au 9e arrondissement et à Villeurbanne, avec l'ambition de couvrir tout le Grand Lyon.</p>
-    <div class="apropos-badges">
-      <span>26 studios</span>
-      <span>315 créneaux/semaine</span>
-      <span>10 zones couvertes</span>
-    </div>
-  </div>
-  <div class="apropos-visual">
-    <div class="backdrop"></div>
-    <div class="panel">
-      <svg width="120" height="120" viewBox="0 0 44 44"><g transform="translate(22,26)"><ellipse cx="0" cy="-10" rx="7" ry="13" fill="none" stroke="#412957" stroke-width="1.4" transform="rotate(-28)"></ellipse><ellipse cx="0" cy="-10" rx="7" ry="13" fill="#ffffff" opacity="0.5" transform="rotate(0)"></ellipse><ellipse cx="0" cy="-10" rx="7" ry="13" fill="none" stroke="#412957" stroke-width="1.4" transform="rotate(28)"></ellipse></g></svg>
-    </div>
-  </div>
-</section>
+<div class="quartier-hero">
+  <div class="eyebrow">Yoga In Lyon</div>
+  <h1>Cours de yoga à 9e arrondissement de Lyon</h1>
+  <p>Cours de yoga à 9e arrondissement de Lyon : 1 studio vérifié, 3 créneaux par semaine (Hatha Yoga). Retrouvez ci-dessous les studios du secteur avec leurs styles enseignés, ou consultez directement le planning complet filtré sur 9e.</p>
+  <a class="cta-btn" href="Yoga_a_Lyon_Planning.html?arr=Lyon%209e">Voir le planning complet de 9e arrondissement de Lyon</a>
+</div>
 
-<section id="contact" class="contact-section">
-  <svg class="deco" width="140" height="140" viewBox="0 0 44 44"><circle cx="22" cy="12" r="6" fill="none" stroke="#412957" stroke-width="1.5"></circle><circle cx="13" cy="29" r="6" fill="#D9C6EC" opacity="0.7"></circle><circle cx="31" cy="29" r="6" fill="none" stroke="#412957" stroke-width="1.5"></circle></svg>
-  <div class="inner">
-    <h2>Nous contacter</h2>
-    <p class="sub">Studio à ajouter ou à corriger, question, suggestion : écrivez-nous.</p>
-    <div class="form-thanks" id="contact-thanks">Merci, votre message a été envoyé !</div>
-    <form class="contact-form" id="contact-form" onsubmit="return submitContact(event)">
-      <input type="text" required placeholder="Votre nom" id="contact-name">
-      <input type="email" required placeholder="Votre email" id="contact-email">
-      <textarea required placeholder="Votre message" id="contact-message" rows="4"></textarea>
-      <button type="submit">Envoyer</button>
-    </form>
+<div class="map-section">
+  <div id="quartier-map"></div>
+</div>
+
+<div class="studios-grid-wrap">
+  <div class="studios-grid">
+    
+      <div class="studio-card">
+        <div class="studio-photo" style="background:linear-gradient(135deg, #e8c9c2, #c9a6d6);"><span>🧘‍♀️</span></div>
+        <div class="studio-body">
+          <div class="studio-name">Pranam Yoga</div>
+          <div class="studio-quartier">Vaise · Lyon 9e</div>
+          <p class="studio-desc">3 créneaux vérifiés par semaine · Hatha Yoga</p>
+          <div class="studio-badges"><span class="style-badge">Hatha Yoga</span></div>
+          <a href="Yoga_a_Lyon_Planning.html?studio=Pranam%20Yoga" class="studio-link">Voir leur planning →</a>
+        </div>
+      </div>
   </div>
-</section>
+</div>
+
+<div class="other-quartiers">
+  <h2>Yoga dans les autres quartiers de Lyon</h2>
+  <div class="links"><a href="yoga-villeurbanne.html">Yoga Villeurbanne</a><a href="yoga-lyon-1er.html">Yoga Lyon 1er</a><a href="yoga-lyon-2e.html">Yoga Lyon 2e</a><a href="yoga-lyon-3e.html">Yoga Lyon 3e</a><a href="yoga-lyon-4e.html">Yoga Lyon 4e</a><a href="yoga-lyon-5e.html">Yoga Lyon 5e</a><a href="yoga-lyon-6e.html">Yoga Lyon 6e</a><a href="yoga-lyon-7e.html">Yoga Lyon 7e</a><a href="yoga-lyon-8e.html">Yoga Lyon 8e</a></div>
+</div>
 
 <footer class="site-footer">
   <div class="inner">
@@ -230,18 +226,20 @@
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-function submitContact(e) {
-  e.preventDefault();
-  const name = document.getElementById('contact-name').value;
-  const email = document.getElementById('contact-email').value;
-  const message = document.getElementById('contact-message').value;
-  const body = 'De : ' + name + ' (' + email + ')\n\n' + message;
-  window.location.href = 'mailto:contact@yoga-in-lyon.fr?subject=' + encodeURIComponent('Message depuis Yoga In Lyon') + '&body=' + encodeURIComponent(body);
-  document.getElementById('contact-thanks').style.display = 'block';
-  document.getElementById('contact-form').style.display = 'none';
-  return false;
-}
+const MARKERS = [{"nom": "Pranam Yoga", "lat": 45.7699, "lng": 4.8047}];
+const map = L.map('quartier-map', { scrollWheelZoom: false }).setView(
+  MARKERS.length ? [MARKERS[0].lat, MARKERS[0].lng] : [45.764, 4.842], 13
+);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap contributors &copy; CARTO', subdomains: 'abcd', maxZoom: 19
+}).addTo(map);
+MARKERS.forEach(m => {
+  L.circleMarker([m.lat, m.lng], { radius: 9, color: '#ffffff', weight: 2, fillColor: '#2c1c3d', fillOpacity: 1 })
+    .addTo(map)
+    .bindPopup('<strong>' + m.nom + '</strong>');
+});
 </script>
 
 </body>

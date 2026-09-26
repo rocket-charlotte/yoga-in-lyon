@@ -115,6 +115,11 @@ html_out = f"""<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Yoga à Lyon — Plannings des cours</title>
+{sc.seo_head(
+    "Yoga à Lyon — Plannings des cours",
+    f"Le planning complet des cours de yoga à Lyon : {len(creneaux)} créneaux vérifiés dans {len(studios)} studios, filtrables par style, jour, horaire et arrondissement.",
+    "Yoga_a_Lyon_Planning.html",
+)}
 {sc.FONTS_LINK}
 <style>
 {sc.BASE_CSS}

@@ -61,6 +61,33 @@ def type_simplifie(t):
     return "Hatha Yoga"
 
 
+SITE_URL = "https://yoga-in-lyon.fr"
+SITE_NAME = "Yoga In Lyon"
+OG_IMAGE = f"{SITE_URL}/banner_web.jpg"
+
+
+def seo_head(title, description, path, og_image=None, og_type="website"):
+    """Retourne les balises meta description / canonical / Open Graph / Twitter Card
+    a inserer dans le <head> de chaque page.
+    path: chemin relatif depuis la racine du site, "" pour la page d'accueil (ex: "Studios.html")."""
+    url = f"{SITE_URL}/{path}" if path else f"{SITE_URL}/"
+    image = og_image or OG_IMAGE
+    desc_escaped = html.escape(description, quote=True)
+    title_escaped = html.escape(title, quote=True)
+    return f"""<meta name="description" content="{desc_escaped}">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="{og_type}">
+<meta property="og:site_name" content="{SITE_NAME}">
+<meta property="og:title" content="{title_escaped}">
+<meta property="og:description" content="{desc_escaped}">
+<meta property="og:image" content="{image}">
+<meta property="og:url" content="{url}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{title_escaped}">
+<meta name="twitter:description" content="{desc_escaped}">
+<meta name="twitter:image" content="{image}">"""
+
+
 def favicon_url(site):
     from urllib.parse import urlparse
     try:
@@ -293,6 +320,80 @@ def footer_html():
     <div class="bottom">L'annuaire du yoga à Lyon · {year}</div>
   </div>
 </footer>"""
+
+
+def studio_jsonld(studio, index=0):
+    """JSON-LD schema.org ExerciseGym pour un studio (fiche + carte Studios)."""
+    types = sorted(set(type_simplifie(c["type"]) for c in studio["cours"]))
+    data = {
+        "@context": "https://schema.org",
+        "@type": "ExerciseGym",
+        "name": studio["nom"],
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": studio["adresse"],
+            "addressLocality": studio["arr"],
+            "addressRegion": "Auvergne-Rhône-Alpes",
+            "addressCountry": "FR",
+        },
+        "url": studio.get("site") or f"{SITE_URL}/Studios.html",
+        "additionalType": "https://www.wikidata.org/wiki/Q9410",
+        "makesOffer": [{"@type": "Offer", "category": t} for t in types],
+    }
+    lat_lng = COORDS.get(studio["nom"])
+    if lat_lng:
+        data["geo"] = {"@type": "GeoCoordinates", "latitude": lat_lng[0], "longitude": lat_lng[1]}
+    return json.dumps(data, ensure_ascii=False)
+
+
+def item_list_jsonld(studios):
+    """JSON-LD ItemList pour la page Studios (annuaire complet)."""
+    items = [
+        {
+            "@type": "ListItem",
+            "position": i + 1,
+            "item": {
+                "@type": "ExerciseGym",
+                "name": s["nom"],
+                "address": s["adresse"],
+                "url": s.get("site") or f"{SITE_URL}/Studios.html",
+            },
+        }
+        for i, s in enumerate(studios)
+    ]
+    data = {"@context": "https://schema.org", "@type": "ItemList", "itemListElement": items}
+    return json.dumps(data, ensure_ascii=False)
+
+
+def website_jsonld():
+    """JSON-LD WebSite pour la page d'accueil."""
+    data = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": SITE_NAME,
+        "url": f"{SITE_URL}/",
+        "description": "Annuaire des studios et cours de yoga à Lyon et Villeurbanne, avec plannings vérifiés.",
+    }
+    return json.dumps(data, ensure_ascii=False)
+
+
+def arr_slug(arr):
+    return arr.lower().replace(" ", "-")
+
+
+def arr_page_filename(arr):
+    return f"yoga-{arr_slug(arr)}.html"
+
+
+def arr_label(arr):
+    """Libellé pour les titres/h1 : 'Lyon 6e' -> '6e arrondissement de Lyon', 'Villeurbanne' -> 'Villeurbanne'."""
+    if arr.startswith("Lyon "):
+        return f"{arr.split(' ', 1)[1]} arrondissement de Lyon"
+    return arr
+
+
+def all_arrondissements():
+    return sorted(set(s["arr"] for s in STUDIOS), key=lambda a: (a != "Villeurbanne", a))
 
 
 def all_creneaux():

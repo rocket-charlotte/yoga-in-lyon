@@ -25,6 +25,11 @@ html_out = f"""<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Profs de yoga à Lyon — Bientôt disponible | Yoga In Lyon</title>
+{sc.seo_head(
+    "Profs de yoga à Lyon — Bientôt disponible | Yoga In Lyon",
+    "Bientôt : l'annuaire des professeurs de yoga à Lyon sur Yoga In Lyon. Inscrivez-vous pour être averti·e du lancement.",
+    "Profs.html",
+)}
 {sc.FONTS_LINK}
 <style>
 {sc.BASE_CSS}
