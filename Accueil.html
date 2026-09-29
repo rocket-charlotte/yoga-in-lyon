@@ -130,19 +130,20 @@
 
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 
-  .hero { position: relative; width: 100%; height: 62vh; min-height: 420px; overflow: hidden; }
+  .hero { position: relative; width: 100%; height: 62vh; min-height: 460px; overflow: hidden; }
   .hero img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; display: block; }
   .hero .hero-scrim {
     position: absolute; inset: 0; background: linear-gradient(0deg, rgba(28,16,38,0.78) 0%, rgba(28,16,38,0.38) 32%, rgba(28,16,38,0.05) 58%, transparent 75%);
   }
-  .hero .hero-text { position: absolute; left: 48px; right: 48px; bottom: 44px; max-width: 640px; color: #FBF8F4; z-index: 2; }
+  .hero .hero-text { position: absolute; left: 48px; right: 48px; bottom: 64px; max-width: 640px; color: #FBF8F4; z-index: 2; }
   .hero .hero-text h1 {
     font-size: 42px; font-weight: 600; margin: 0 0 8px; line-height: 1.12;
     text-shadow: 0 2px 18px rgba(0,0,0,0.45);
   }
   .hero .hero-text p { font-size: 15.5px; margin: 0; color: #EFE6F6; text-shadow: 0 1px 10px rgba(0,0,0,0.4); }
   @media (max-width: 900px) {
-    .hero { min-height: 480px; }
+    .hero { min-height: 500px; }
+    .hero .hero-text { bottom: 56px; }
     .hero .hero-text h1 { font-size: 32px; }
   }
   @media (max-width: 700px) {
