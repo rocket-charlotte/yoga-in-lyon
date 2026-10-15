@@ -1,0 +1,12 @@
+# seo-yoga-in-lyon
+# Yoga In Lyon — règles SEO pour l'hébergement OVH (Apache)
+RewriteEngine On
+
+# 1. Forcer HTTPS et le domaine sans www
+RewriteCond %{HTTPS} off [OR]
+RewriteCond %{HTTP_HOST} ^www\. [NC]
+RewriteRule ^(.*)$ https://yoga-in-lyon.fr/$1 [R=301,L]
+
+# 2. Accueil.html et index.html -> racine (évite le contenu dupliqué)
+RewriteCond %{THE_REQUEST} \s/(Accueil|index)\.html[\s?] [NC]
+RewriteRule ^ / [R=301,L]
