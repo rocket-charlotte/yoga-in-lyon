@@ -125,3 +125,82 @@ STYLES = {
 """,
     },
 }
+
+
+# ---------------------------------------------------------------------------
+# Pages thématiques (recherches à fort potentiel). Le filtre est défini dans
+# seo_build.py (COLLECTION_FILTERS) avec la même clé.
+COLLECTIONS = {
+    "debutant": {
+        "slug": "yoga-debutant-lyon",
+        "titre": "Yoga pour débutants à Lyon",
+        "court": "Yoga débutant",
+        "intro": """
+<p>Vous n'avez jamais fait de yoga, ou vous reprenez après une longue pause ? Bonne nouvelle : à Lyon, de nombreux studios proposent des cours pensés pour démarrer en douceur. Nous avons sélectionné ici les cours de niveau 1, les cours « tous niveaux », les bases du yoga et les séances douces.</p>
+<p>Pour un premier cours, privilégiez le Hatha ou un cours doux : le rythme est lent et le professeur prend le temps d'expliquer chaque posture. Arrivez 10 minutes en avance pour signaler que vous débutez, et n'hésitez pas à demander si le studio propose un cours d'essai.</p>
+""",
+    },
+    "prenatal": {
+        "slug": "yoga-prenatal-lyon",
+        "titre": "Yoga prénatal à Lyon",
+        "court": "Yoga prénatal",
+        "intro": """
+<p>Le yoga prénatal adapte la pratique à la grossesse : postures stables, travail du souffle, mobilité du bassin et relaxation. Il aide à soulager les tensions du dos, à mieux dormir et à se préparer à l'accouchement, dans un groupe de futures mamans.</p>
+<p>Les cours ci-dessous sont spécifiquement dédiés aux femmes enceintes. Demandez toujours l'accord de votre sage-femme ou de votre médecin avant de commencer, et prévenez le professeur de votre terme.</p>
+""",
+    },
+    "seniors": {
+        "slug": "yoga-seniors-lyon",
+        "titre": "Yoga séniors et yoga adapté à Lyon",
+        "court": "Yoga séniors",
+        "intro": """
+<p>Le yoga se pratique à tout âge, à condition d'être bien accompagné. Les cours réunis ici sont pensés pour les séniors ou adaptés aux limitations physiques : yoga sur chaise, activité physique adaptée, cours séniors et yoga « adapté ».</p>
+<p>Ils travaillent l'équilibre, la mobilité des articulations et la respiration, sans postures risquées. La méthode Iyengar, avec ses accessoires, est particulièrement appréciée pour pratiquer en sécurité.</p>
+""",
+    },
+    "midi": {
+        "slug": "yoga-midi-lyon",
+        "titre": "Cours de yoga le midi à Lyon",
+        "court": "Yoga le midi",
+        "intro": """
+<p>Une heure de yoga à la pause déjeuner, c'est le meilleur moyen de couper la journée et de revenir au bureau détendu. À Lyon, beaucoup de studios proposent des cours entre 12h et 14h, d'une durée de 45 minutes à 1h15.</p>
+<p>Les quartiers d'affaires sont les mieux servis : Part-Dieu, Brotteaux, Presqu'île et Croix-Rousse. Voici tous les cours du midi, jour par jour, pour trouver celui qui tombe près de votre travail.</p>
+""",
+    },
+    "weekend": {
+        "slug": "yoga-week-end-lyon",
+        "titre": "Cours de yoga le week-end à Lyon",
+        "court": "Yoga le week-end",
+        "intro": """
+<p>Le samedi matin ou le dimanche soir, c'est souvent le seul moment où l'on a vraiment le temps. Plusieurs studios lyonnais ouvrent le week-end, avec des cours plus longs, des formats doux pour bien finir la semaine ou des séances dynamiques pour bien la commencer.</p>
+<p>Voici tous les cours du samedi et du dimanche à Lyon et Villeurbanne.</p>
+""",
+    },
+    "croix-rousse": {
+        "slug": "yoga-croix-rousse",
+        "titre": "Yoga à la Croix-Rousse",
+        "court": "Yoga Croix-Rousse",
+        "intro": """
+<p>Des pentes du 1er arrondissement jusqu'au plateau du 4e, la Croix-Rousse est le quartier de Lyon qui compte le plus de studios de yoga. Anciens ateliers de canuts, salles intimistes, écoles de tradition : on y pratique dans des lieux qui ont du caractère, souvent en petits groupes.</p>
+<p>L'offre y est très variée : Hatha, Iyengar, Kundalini, Vinyasa, Yin et méditation. Le quartier se rejoint en métro C (Croix-Paquet, Croix-Rousse, Hénon) ou à pied depuis les Terreaux.</p>
+""",
+    },
+    "part-dieu": {
+        "slug": "yoga-part-dieu",
+        "titre": "Yoga à Part-Dieu",
+        "court": "Yoga Part-Dieu",
+        "intro": """
+<p>Autour de la gare et du centre d'affaires de Part-Dieu, les studios s'adressent surtout aux actifs : cours le midi, en soirée et tôt le matin, avec une offre plutôt dynamique (Vinyasa, Ashtanga, hot yoga) mais aussi des séances de Yin pour décompresser.</p>
+<p>Pratique si vous travaillez dans le quartier ou arrivez en train : tout est à quelques minutes à pied de la gare, des Halles Paul Bocuse ou du métro B.</p>
+""",
+    },
+}
+
+# Textes de la page Studios (cible : « studio yoga Lyon »).
+STUDIOS_GUIDE = """
+<h2>Comment choisir son studio de yoga à Lyon ?</h2>
+<p>Lyon compte des dizaines de lieux où pratiquer le yoga, du grand studio qui propose une trentaine de cours par semaine à la petite salle de quartier tenue par un seul professeur. Pour bien choisir, trois critères comptent plus que les autres.</p>
+<p><strong>La proximité.</strong> Le meilleur studio est celui où vous irez vraiment. Choisissez-le près de chez vous ou de votre travail : un cours à 10 minutes à pied, c'est un cours qu'on ne rate pas. Nos pages par quartier vous aident à repérer les studios autour de vous.</p>
+<p><strong>Le style.</strong> Hatha pour débuter et travailler en douceur, Vinyasa pour un yoga dynamique, Yin pour récupérer, Iyengar pour la précision, Ashtanga pour une pratique structurée et exigeante. Chaque studio a sa spécialité : regardez les styles enseignés avant de vous inscrire.</p>
+<p><strong>Les horaires.</strong> Certains studios concentrent leurs cours le soir, d'autres ouvrent dès 7h ou le dimanche. Notre planning recense tous les créneaux de la semaine, studio par studio, pour trouver celui qui colle à votre emploi du temps.</p>
+"""
