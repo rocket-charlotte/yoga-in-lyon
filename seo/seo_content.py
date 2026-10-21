@@ -269,3 +269,19 @@ STYLE_GUIDE_CHOIX = """
 <p><strong>Vous êtes enceinte.</strong> Optez pour un cours de yoga prénatal plutôt qu'un cours classique, avec l'accord de votre sage-femme ou de votre médecin.</p>
 <p>Dans tous les cas, le bon cours est surtout celui qui tombe au bon endroit et au bon moment : un cours à côté de chez vous, c'est un cours que vous ne raterez pas.</p>
 """
+
+
+# ---------------------------------------------------------------------------
+# Page « Qui sommes-nous » (texte fourni par Charlotte, mis en forme).
+APROPOS_INTRO = """
+<p>Yoga In Lyon est un annuaire indépendant qui recense les studios et les cours de yoga de Lyon et Villeurbanne, avec leurs horaires de la semaine, pour trouver le cours qui colle à votre quotidien et à vos envies.</p>
+"""
+
+APROPOS_HISTOIRE = """
+<h2>L'histoire du site</h2>
+<p>Je m'appelle Charlotte. Je pratique et j'enseigne le yoga, et je vis à Lyon depuis dix ans.</p>
+<p>Pendant des années, j'ai passé beaucoup de temps à chercher, studio par studio, des cours qui collaient à mon emploi du temps. Autour de moi, mes amis me demandaient souvent conseil pour trouver le bon cours, selon leur quotidien et leurs envies.</p>
+<p>J'ai créé Yoga In Lyon pour ça : réunir au même endroit tous les cours de la ville, pour que chacun trouve le sien sans y passer des heures.</p>
+<p>Le site a aussi une autre ambition : mettre en avant le tissu lyonnais du yoga, ses studios, ses profs et ses lieux de quartier, et réunir tous celles et ceux qui s'y intéressent, de près ou de loin.</p>
+<p><em>Charlotte, fondatrice de Yoga In Lyon</em></p>
+"""

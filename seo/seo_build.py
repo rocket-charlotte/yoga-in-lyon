@@ -32,7 +32,7 @@ from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from seo_content import (COLLECTIONS, GUIDES, QUARTIERS, STUDIOS_GUIDE, STYLE_GUIDE, STYLE_GUIDE_CHOIX,  # noqa: E402
+from seo_content import (APROPOS_HISTOIRE, APROPOS_INTRO, COLLECTIONS, GUIDES, QUARTIERS, STUDIOS_GUIDE, STYLE_GUIDE, STYLE_GUIDE_CHOIX,  # noqa: E402
                          STYLES)
 from seo_profs import INDEPENDANTS, PROFS  # noqa: E402
 import shutil  # noqa: E402
@@ -246,7 +246,8 @@ EXTRA_CSS = """
   .quartier-hero h1 { font-size: 32px; font-weight: 500; margin: 0 0 14px; }
   .seo-intro ul { color: #5a4a68; font-size: 15.5px; line-height: 1.7; max-width: 760px; margin: 0 0 14px; padding-left: 22px; }
   .faq h3 { font-size: 18px; font-weight: 500; margin: 22px 0 6px; }
-  .seo-intro h2 { font-size: 24px; font-weight: 500; margin: 0 0 14px; }
+  .seo-intro h2 { font-size: 24px; font-weight: 500; margin: 32px 0 14px; }
+  .seo-intro h2:first-child { margin-top: 0; }
 """
 
 
@@ -630,10 +631,31 @@ def patch_profs_page(text, profs, studios):
     return replace_block(text, "profs", block, anchor_before='<footer class="site-footer">')
 
 
-def patch_about(text):
-    return replace_block(text, "pageld", jsonld({"@context": "https://schema.org", "@type": "AboutPage",
-                         "name": "Qui sommes-nous", "url": BASE + "A-propos.html",
-                         "about": {"@id": BASE + "#organization"}})
+def patch_about(text, data, studios):
+    text = set_meta(text, "Qui sommes-nous : l'histoire de Yoga In Lyon",
+                    "Yoga In Lyon a été créé par Charlotte, pratiquante et professeure de yoga à Lyon depuis dix ans, "
+                    "pour aider chacun à trouver le cours de yoga qui colle à son quotidien.")
+    text = re.sub(r'(<section class="apropos-hero">\s*<div>).*?(<div class="apropos-badges">)',
+                  lambda m: m.group(1) + '\n    <div class="eyebrow">Notre histoire</div>\n    <h1>Qui sommes-nous</h1>\n'
+                  + APROPOS_INTRO + "    " + m.group(2), text, count=1, flags=re.S)
+    methode = (f'<h2>Comment nous recensons les cours</h2>'
+               f'<p>Chaque studio est ajouté à la main : ses cours réguliers sont relevés un par un sur son site, avec le '
+               f'jour, l\'horaire, le style et le lien pour réserver. Aujourd\'hui, {len(studios)} studios et {len(data)} '
+               f'cours par semaine sont référencés, du 1er au 9e arrondissement et à Villeurbanne. Le planning a été mis à '
+               f'jour le {date_fr(DATA_DATE)} ; les stages et ateliers ponctuels ne sont pas comptés.</p>'
+               f'<p>Une erreur, un cours qui a changé, un studio qui manque ? Écrivez-nous avec le formulaire ci-dessous, '
+               f'nous corrigeons rapidement.</p>'
+               f'<h2>Studios et profs : rejoignez l\'annuaire</h2>'
+               f'<p>Vous tenez un studio ou vous enseignez à Lyon ? L\'inscription est gratuite. Les profs peuvent aussi '
+               f'<a href="Profs.html#vous-etes-prof">créer leur page</a> pour regrouper tous leurs cours.</p>')
+    text = replace_block(text, "about", f'<div class="section seo-intro" style="padding-top:40px">{APROPOS_HISTOIRE}{methode}</div>',
+                         anchor_before='<section id="contact"')
+    org = {"@context": "https://schema.org", "@type": "AboutPage", "name": "Qui sommes-nous",
+           "url": BASE + "A-propos.html", "dateModified": DATA_DATE,
+           "about": {"@type": "Organization", "@id": BASE + "#organization", "name": "Yoga In Lyon", "url": BASE,
+                     "founder": {"@type": "Person", "name": "Charlotte", "jobTitle": "Professeure de yoga",
+                                 "homeLocation": {"@type": "City", "name": "Lyon"}}}}
+    return replace_block(text, "pageld", jsonld(org)
                          + jsonld(breadcrumb([("Accueil", "/"), ("Qui sommes-nous", "A-propos.html")])),
                          anchor_before="</head>")
 
@@ -1089,7 +1111,7 @@ def main(site):
         if p.name == "Profs.html":
             t = patch_profs_page(t, profs, studios)
         if p.name == "A-propos.html":
-            t = patch_about(t)
+            t = patch_about(t, data, studios)
         if t != t0:
             p.write_text(t, encoding="utf-8")
 
