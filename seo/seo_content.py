@@ -116,6 +116,14 @@ STYLES = {
 <p>Ces formats conviennent bien aux sportifs et à celles et ceux qui veulent un yoga plus physique, ou compléter une pratique de course ou de musculation.</p>
 """,
     },
+    "Yoga Aérien": {
+        "slug": "yoga-aerien-lyon",
+        "titre": "Cours de yoga aérien à Lyon",
+        "intro": """
+<p>Le yoga aérien se pratique suspendu dans un hamac en tissu accroché au plafond. Le hamac soutient une partie du poids du corps : on peut ainsi travailler la souplesse, la force et les inversions (tête en bas) plus facilement qu'au sol, avec une vraie sensation de légèreté.</p>
+<p>Les cours sont souvent en petits groupes, le nombre de hamacs étant limité : pensez à réserver. Les inversions sont déconseillées en cas de grossesse, de glaucome ou de tension non contrôlée : demandez l'avis de votre médecin en cas de doute.</p>
+""",
+    },
     "Hot Yoga": {
         "slug": "hot-yoga-lyon",
         "titre": "Cours de Hot yoga à Lyon",
@@ -246,6 +254,8 @@ STYLE_GUIDE = {
                        "Mouvements répétés, respiration, mantras, méditation."),
     "Renfo & Pilates": ("Dynamique", "Gainage, renforcement, complément d'un sport",
                         "Yoga mêlé de Pilates et de renforcement musculaire."),
+    "Yoga Aérien": ("Ludique", "Curieux, envie de nouveauté, travail de la souplesse",
+                    "Pratique suspendue dans un hamac, avec des inversions accompagnées."),
     "Hot Yoga": ("Intense", "Pratiquants en bonne santé qui aiment l'effort",
                  "Salle chauffée vers 35 à 40 °C ; déconseillé en cas de grossesse ou de problème cardiaque."),
 }
