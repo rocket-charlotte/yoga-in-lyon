@@ -40,7 +40,7 @@ PROFS = [
 # Studios du planning qui sont en réalité un prof indépendant : ils apparaissent
 # dans la section « Profs indépendants » de la page Profs (lien vers leur page studio).
 INDEPENDANTS = [
-    "Samtosha Yoga - Patricia Heude",
-    "Yoga by Valérie Maurel (Saône & Soi)",
-    "Karan Anand Nathalie",
+    # Vide tant que ces profs n'ont pas donné leur accord pour apparaître sur la page Profs.
+    # Candidates à contacter : "Samtosha Yoga - Patricia Heude", "Yoga by Valérie Maurel (Saône & Soi)",
+    # "Karan Anand Nathalie" (noms exacts des studios, à remettre ici une fois l'accord obtenu).
 ]
