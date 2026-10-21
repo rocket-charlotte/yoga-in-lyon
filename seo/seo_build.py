@@ -33,6 +33,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from seo_content import COLLECTIONS, QUARTIERS, STUDIOS_GUIDE, STYLES  # noqa: E402
+from seo_profs import INDEPENDANTS, PROFS  # noqa: E402
+import shutil  # noqa: E402
 
 BASE = "https://yoga-in-lyon.fr/"
 JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
@@ -198,6 +200,10 @@ EXTRA_CSS = """
   .studio-list a.item span { font-size: 13.5px; color: var(--muted); }
   #studio-map { width: 100%; height: 280px; border-radius: 18px; overflow: hidden; background: var(--border); }
   .seo-static .course-card { margin-bottom: 8px; }
+  .quartier-hero { max-width: 1180px; margin: 0 auto; padding: 56px 24px 10px; }
+  .quartier-hero .eyebrow { font-size: 12px; font-weight: 700; color: #9B7FB0; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+  .quartier-hero h1 { font-size: 32px; font-weight: 500; margin: 0 0 14px; }
+  .seo-intro ul { color: #5a4a68; font-size: 15.5px; line-height: 1.7; max-width: 760px; margin: 0 0 14px; padding-left: 22px; }
   .faq h3 { font-size: 18px; font-weight: 500; margin: 22px 0 6px; }
   .seo-intro h2 { font-size: 24px; font-weight: 500; margin: 0 0 14px; }
 """
@@ -285,7 +291,7 @@ def list_fr(items):
 
 
 # --------------------------------------------------------------------------- studio pages
-def build_studio(s, studios, chrome_parts):
+def build_studio(s, studios, chrome_parts, profs_here=()):
     n = len(s["cours"])
     cr = Counter(c["creneau"] for c in s["cours"])
     jours = [j for j in JOURS if any(c["jour"] == j for c in s["cours"])]
@@ -349,6 +355,7 @@ def build_studio(s, studios, chrome_parts):
   <p class="note">Horaires relevés sur le site du studio. Vérifiez auprès de {esc(s['name'])} avant de vous déplacer (vacances, cours complets).</p>
 </div>
 {'<div class="section"><div id="studio-map"></div></div>' if s['geo'] else ''}
+{profs_section(profs_here, "Les profs de ce studio")}
 {near_html}
 <div class="section"><div class="pills"><a href="{arr_page(s['arr'])}">Tout le yoga · {esc(s['arr'])}</a><a href="{PLANNING}">Planning de tous les studios</a></div></div>
 """
@@ -393,6 +400,181 @@ def build_style(ts, data, studios, chrome_parts):
                                for i, (n, _) in enumerate(sts.most_common())]},
           breadcrumb([("Accueil", "/"), ("Planning", PLANNING), (ts, meta["slug"] + ".html")])]
     return page_shell(chrome_parts, title=title, desc=desc, canonical=meta["slug"] + ".html", body=body, ld=ld)
+
+
+# --------------------------------------------------------------------------- profs
+def prof_page(p):
+    return "prof-" + p["slug"] + ".html"
+
+
+def resolve_profs(data, studios, report):
+    out = []
+    for raw in PROFS:
+        p = dict(raw)
+        if not p.get("nom"):
+            report.append("Prof sans nom dans seo_profs.py : entrée ignorée")
+            continue
+        p["slug"] = slugify(p["nom"])
+        p.setdefault("titre", "Professeure de yoga")
+        cours = []
+        for rule in p.get("cours", []):
+            st = rule.get("studio")
+            if st not in studios:
+                report.append(f"Prof « {p['nom']} » : studio inconnu « {st} » (nom exact attendu)")
+                continue
+            m = (rule.get("match") or "").lower()
+            found = [dict(c) for c in studios[st]["cours"] if m in c["type"].lower()]
+            if not found:
+                report.append(f"Prof « {p['nom']} » : aucun cours contenant « {rule.get('match')} » chez {st}")
+            cours += found
+        for x in p.get("extra", []):
+            c = {"jour": x.get("jour", ""), "debut": norm_time(x.get("debut", "")), "fin": norm_time(x.get("fin", "")),
+                 "type": x.get("type", "Yoga"), "type_simple": x.get("style"), "studio": None,
+                 "lieu": x.get("lieu", ""), "arr": ""}
+            cours.append(c)
+        p["cours_all"] = cours
+        p["studios"] = sorted({c["studio"] for c in cours if c.get("studio")})
+        p["styles"] = [s for s, _ in Counter(c["type_simple"] for c in cours if c.get("type_simple")).most_common()]
+        out.append(p)
+    return out
+
+
+def prof_card(p):
+    img = (f'<img src="prof-{p["slug"]}{Path(p["photo"]).suffix.lower()}" alt="{esc(p["nom"])}" width="64" height="64" '
+           f'loading="lazy" style="width:64px;height:64px;border-radius:50%;object-fit:cover;float:left;margin-right:14px">'
+           if p.get("photo") else "")
+    sub = " · ".join(x for x in [list_fr(p["styles"][:3]) if p["styles"] else "", list_fr(p["studios"][:2]) if p["studios"] else ""] if x)
+    return (f'<a class="item" href="{prof_page(p)}">{img}<strong>{esc(p["nom"])}</strong>'
+            f'<span>{esc(sub or p["titre"])}</span></a>')
+
+
+def profs_section(profs, heading):
+    if not profs:
+        return ""
+    return (f'<div class="section"><h2>{esc(heading)}</h2><div class="studio-list">'
+            + "".join(prof_card(p) for p in profs) + "</div></div>")
+
+
+def prof_schedule(cours):
+    by_day = defaultdict(list)
+    for c in cours:
+        by_day[c["jour"]].append(c)
+    out = []
+    for j in sorted(by_day, key=lambda d: JOURS.index(d) if d in JOURS else 9):
+        rows = []
+        for c in sorted(by_day[j], key=lambda c: c["debut"]):
+            t = esc(c["debut"] + (" – " + c["fin"] if c["fin"] else ""))
+            where = (f'<a href="{studio_page(c["studio"])}">{esc(c["studio"])}</a> <span class="s">({esc(c["arr"])})</span>'
+                     if c.get("studio") else esc(c.get("lieu") or ""))
+            style = (f'<a href="{style_page(c["type_simple"])}">{esc(c["type_simple"])}</a>'
+                     if c.get("type_simple") in STYLES else esc(c.get("type_simple") or ""))
+            rows.append(f'<tr><td class="t">{t}</td><td>{esc(c["type"])} · {where}</td><td class="s">{style}</td></tr>')
+        out.append(f'<div class="day-block"><h3>{esc(j)}</h3><table class="slots">{"".join(rows)}</table></div>')
+    return "\n".join(out)
+
+
+def build_prof(p, studios, chrome_parts):
+    n = len(p["cours_all"])
+    first = p["nom"].split()[0]
+    lieux = p["studios"] + sorted({c["lieu"] for c in p["cours_all"] if c.get("lieu")})
+    title = f'{p["nom"]}, {p["titre"].lower()} à Lyon : cours et horaires | Yoga In Lyon'
+    desc = (f'{p["nom"]}, {p["titre"].lower()} à Lyon'
+            + (f' : {list_fr(p["styles"][:3])}' if p["styles"] else "")
+            + (f', {plural(n, "cours", "cours")} par semaine' if n else "")
+            + (f' ({list_fr(lieux[:3])})' if lieux else "") + ". Horaires et réservation.")
+    photo = (f'<img src="prof-{p["slug"]}{Path(p["photo"]).suffix.lower()}" alt="{esc(p["nom"])}, {esc(p["titre"].lower())} à Lyon" '
+             f'width="160" height="160" style="width:160px;height:160px;border-radius:50%;object-fit:cover;margin-bottom:18px">'
+             if p.get("photo") else "")
+    links = [(k, lbl) for k, lbl in (("reservation", "Réserver un cours →"), ("site", "Site web →"),
+                                       ("instagram", "Instagram →")) if p.get(k)]
+    facts = ""
+    if p["styles"]:
+        facts += ('<div class="fact"><div class="k">Styles</div><div class="v">'
+                  + ", ".join(f'<a href="{style_page(s)}">{esc(s)}</a>' if s in STYLES else esc(s) for s in p["styles"])
+                  + "</div></div>")
+    if lieux:
+        facts += ('<div class="fact"><div class="k">Où pratiquer avec ' + esc(first) + '</div><div class="v">'
+                  + ", ".join(f'<a href="{studio_page(s)}">{esc(s)}</a>' if s in studios else esc(s) for s in lieux)
+                  + "</div></div>")
+    if n:
+        facts += f'<div class="fact"><div class="k">Cours par semaine</div><div class="v">{n}</div></div>'
+    if p.get("formation"):
+        facts += f'<div class="fact"><div class="k">Formation</div><div class="v">{esc(p["formation"])}</div></div>'
+    for k, lbl in links:
+        facts += (f'<div class="fact"><div class="k">{"Réservation" if k == "reservation" else k.capitalize()}</div>'
+                  f'<div class="v"><a href="{esc(p[k])}" target="_blank" rel="noopener">{lbl}</a></div></div>')
+    bio = p.get("bio") or ""
+    if bio and not bio.lstrip().startswith("<"):
+        bio = f"<p>{esc(bio)}</p>"
+    sched = (f'<div class="section"><h2>Les cours de {esc(first)} cette semaine</h2>{prof_schedule(p["cours_all"])}'
+             f'<p class="note">Horaires relevés sur les sites des studios. Vérifiez avant de vous déplacer.</p></div>'
+             if n else "")
+    body = f"""
+<nav class="crumbs" aria-label="Fil d'Ariane"><a href="/">Accueil</a> › <a href="Profs.html">Profs</a> › {esc(p['nom'])}</nav>
+<div class="quartier-hero">
+  {photo}
+  <div class="eyebrow">{esc(p['titre'])} à Lyon</div>
+  <h1>{esc(p['nom'])}</h1>
+</div>
+<div class="seo-intro">{bio}</div>
+<div class="facts">{facts}</div>
+{sched}
+<div class="section"><div class="pills"><a href="Profs.html">Tous les profs de yoga à Lyon</a><a href="{PLANNING}">Planning de tous les studios</a></div></div>
+"""
+    person = {"@context": "https://schema.org", "@type": "Person", "name": p["nom"], "jobTitle": p["titre"],
+              "url": BASE + prof_page(p), "address": {"@type": "PostalAddress", "addressLocality": "Lyon", "addressCountry": "FR"}}
+    same = [p[k] for k in ("site", "instagram") if p.get(k)]
+    if same:
+        person["sameAs"] = same
+    if p.get("photo"):
+        person["image"] = BASE + f'prof-{p["slug"]}{Path(p["photo"]).suffix.lower()}'
+    if p["studios"]:
+        person["worksFor"] = [{"@type": "ExerciseGym", "name": s, "url": BASE + studio_page(s)} for s in p["studios"]]
+    ld = [person, breadcrumb([("Accueil", "/"), ("Profs", "Profs.html"), (p["nom"], prof_page(p))])]
+    return page_shell(chrome_parts, title=title, desc=desc, canonical=prof_page(p), body=body, ld=ld)
+
+
+PROFS_OFFER = """
+<div class="section seo-intro" id="vous-etes-prof">
+  <h2>Vous êtes prof de yoga à Lyon ?</h2>
+  <p>Yoga In Lyon vous crée <strong>gratuitement</strong> une page qui regroupe tous vos cours, quel que soit le studio, avec vos liens de réservation. Elle peut servir de lien unique dans votre bio Instagram, et vos élèves y trouvent tous vos créneaux au même endroit.</p>
+  <p>Il suffit d'envoyer :</p>
+  <ul>
+    <li>une photo de vous (format carré de préférence) ;</li>
+    <li>deux à six phrases de présentation : votre parcours, votre façon d'enseigner ;</li>
+    <li>les studios et créneaux où vous enseignez, et vos cours hors studio (plein air, en ligne) ;</li>
+    <li>vos liens : site, Instagram, réservation.</li>
+  </ul>
+  <p><a class="cta-btn" style="display:inline-block;padding:13px 26px;border-radius:999px;background:var(--brand-purple);color:#FBF8F4;font-weight:600" href="mailto:contact@yoga-in-lyon.fr?subject=Ma%20page%20prof%20sur%20Yoga%20In%20Lyon&amp;body=Bonjour%2C%0A%0ANom%20%3A%0APr%C3%A9sentation%20%3A%0AStudios%20et%20cr%C3%A9neaux%20%3A%0ACours%20hors%20studio%20%3A%0ASite%20%2F%20Instagram%20%2F%20r%C3%A9servation%20%3A%0A%0A(photo%20en%20pi%C3%A8ce%20jointe)">Créer ma page gratuitement</a></p>
+  <p class="note">La page est en ligne sous quelques jours. Vous pouvez demander à la modifier ou à la retirer à tout moment.</p>
+</div>
+"""
+
+
+def patch_profs_page(text, profs, studios):
+    n = len(profs)
+    title = ("Profs de yoga à Lyon : trouvez votre professeur | Yoga In Lyon" if n
+             else "Profs de yoga à Lyon : professeurs indépendants et studios | Yoga In Lyon")
+    text = set_meta(text, title, "Les professeurs de yoga à Lyon : leurs cours dans les studios et en indépendant, "
+                    "leurs styles et leurs horaires. Vous êtes prof ? Créez gratuitement votre page.")
+    indep = [studios[s] for s in INDEPENDANTS if s in studios]
+    indep_html = ""
+    if indep:
+        indep_html = ('<div class="section"><h2>Profs indépendants</h2><div class="studio-list">'
+                      + "".join(f'<a class="item" href="{studio_page(s["name"])}"><strong>{esc(s["name"])}</strong>'
+                                f'<span>{esc(s["quartier"])} · {plural(len(s["cours"]), "cours", "cours")}/sem. · '
+                                f'{esc(list_fr(s["styles"][:3]))}</span></a>' for s in indep)
+                      + "</div></div>")
+    intro = ("<p>Un bon prof compte souvent plus que le studio. Retrouvez ici les professeurs de yoga qui enseignent "
+             "à Lyon, où ils donnent leurs cours et comment réserver.</p>")
+    block = (f'<div class="quartier-hero"><div class="eyebrow">Yoga In Lyon</div><h1>Profs de yoga à Lyon</h1></div>'
+             f'<div class="seo-intro">{intro}</div>'
+             + profs_section(profs, "Les profs") + indep_html + PROFS_OFFER
+             + f'<div class="section"><div class="pills"><a href="Studios.html">Tous les studios</a>'
+               f'<a href="{PLANNING}">Planning de la semaine</a></div></div>')
+    text = re.sub(r'<section class="profs-section">.*?</section>\s*', "", text, count=1, flags=re.S)
+    text = re.sub(r'<script>\s*function submitProfs.*?</script>\s*', "", text, count=1, flags=re.S)
+    return replace_block(text, "profs", block, anchor_before='<footer class="site-footer">')
 
 
 # --------------------------------------------------------------------------- thematic pages
@@ -611,9 +793,23 @@ def main(site):
     report = []
 
     generated = []
+    profs = resolve_profs(data, studios, report)
+    photos_dir = Path(__file__).resolve().parent / "profs"
+    for p in profs:
+        if p.get("photo"):
+            src = photos_dir / p["photo"]
+            if src.exists():
+                shutil.copyfile(src, site / f'prof-{p["slug"]}{src.suffix.lower()}')
+            else:
+                report.append(f"Photo introuvable pour « {p['nom']} » : seo/profs/{p['photo']}")
+                p["photo"] = None
+        fn = prof_page(p)
+        (site / fn).write_text(build_prof(p, studios, chrome_parts), encoding="utf-8")
+        generated.append(fn)
     for s in studios.values():
         fn = studio_page(s["name"])
-        (site / fn).write_text(build_studio(s, studios, chrome_parts), encoding="utf-8")
+        here = [p for p in profs if s["name"] in p["studios"]]
+        (site / fn).write_text(build_studio(s, studios, chrome_parts, here), encoding="utf-8")
         generated.append(fn)
     for ts in STYLES:
         if ts in styles_present:
@@ -645,6 +841,8 @@ def main(site):
             t = patch_home(t, styles_present, data, studios)
         if p.name == "Studios.html":
             t = patch_studios_page(t, data, studios)
+        if p.name == "Profs.html":
+            t = patch_profs_page(t, profs, studios)
         if t != t0:
             p.write_text(t, encoding="utf-8")
 
@@ -674,7 +872,7 @@ def main(site):
             if k in s["name"].lower() and ts not in s["styles"]:
                 report.append(f"« {s['name']} » n'a aucun cours classé {ts} dans le planning")
 
-    print(f"OK : {len(studios)} pages studio, {len(generated) - len(studios)} pages style/thématiques, "
+    print(f"OK : {len(profs)} pages prof, {len(studios)} pages studio, {len(generated) - len(studios) - len(profs)} pages style/thématiques, "
           f"{len(urls)} URL dans sitemap.xml")
     for r in report:
         print("  ⚠ " + r)

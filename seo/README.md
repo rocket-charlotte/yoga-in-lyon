@@ -34,3 +34,11 @@ Tout est dans `seo/seo_content.py` (un texte par quartier, un par style). Une de
 ## Avertissements affichés
 
 Le script signale les données à corriger (adresse sans code postal, studio « Ashtanga » sans cours d'Ashtanga…). Ce ne sont pas des erreurs bloquantes.
+
+## Ajouter un prof
+
+1. Le prof envoie (via le bouton « Créer ma page gratuitement » de la page Profs) : photo, présentation, créneaux, liens.
+2. Mets la photo dans `seo/profs/` et ajoute une entrée dans `seo/seo_profs.py` (modèle en haut du fichier).
+3. Commit + push : la page `prof-<nom>.html` est créée, ajoutée à la page Profs, au sitemap et aux pages des studios où il ou elle enseigne.
+
+Le script signale un nom de studio mal orthographié ou un mot qui ne correspond à aucun cours.
