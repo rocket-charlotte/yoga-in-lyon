@@ -41,6 +41,7 @@ def type_simplifie(t):
     t_low = t.lower()
     if "iyengar" in t_low: return "Yoga Iyengar"
     if "kundalini" in t_low: return "Yoga Kundalini"
+    if "aérien" in t_low or "aerien" in t_low: return "Yoga Aérien"
     if "jivamukti" in t_low: return "Yoga Vinyasa"
     if "vinyasa" in t_low: return "Yoga Vinyasa"
     if "flow" in t_low or "rocket" in t_low or "power" in t_low: return "Yoga Vinyasa"
@@ -104,7 +105,7 @@ def favicon_url(site):
 # Chaque style a un "hue" OKLCH ; bg tres clair, texte fonce, point (dot) plus vif.
 TYPE_ORDER = [
     "Hatha Yoga", "Pranayama & Nidra", "Yoga Iyengar", "Renfo & Pilates",
-    "Yoga Kundalini", "Yin Yoga", "Hot Yoga", "Ashtanga", "Yoga Vinyasa",
+    "Yoga Kundalini", "Yin Yoga", "Hot Yoga", "Ashtanga", "Yoga Vinyasa", "Yoga Aérien",
 ]
 # Palette volontairement restreinte aux tons bleu / violet / rose / rouge
 # (hue OKLCH de 220° à 380°=20°, on evite le vert/jaune/orange/cyan).
@@ -142,6 +143,7 @@ COORDS = {
     "GOTAMYOGA": (45.7458, 4.8580),
     "Pranam Yoga": (45.7699, 4.8047),
     "Vima Yoga": (45.7665, 4.8807),
+    "Pandi Panda Yoga": (45.7708, 4.8925),
     "The Good Flow": (45.7645, 4.8530),
     "O Yoga Studio": (45.7690, 4.8480),
     "Les Ailes Hatha Yoga": (45.7715, 4.8555),
