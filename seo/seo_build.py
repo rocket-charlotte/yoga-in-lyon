@@ -632,7 +632,7 @@ def patch_profs_page(text, profs, studios):
 
 
 def patch_about(text, data, studios):
-    text = set_meta(text, "Qui sommes-nous : l'histoire de Yoga In Lyon",
+    text = set_meta(text, "Qui sommes-nous : l'histoire du site",
                     "Yoga In Lyon a été créé par Charlotte, pratiquante et professeure de yoga à Lyon depuis dix ans, "
                     "pour aider chacun à trouver le cours de yoga qui colle à son quotidien.")
     text = re.sub(r'(<section class="apropos-hero">\s*<div>).*?(<div class="apropos-badges">)',
