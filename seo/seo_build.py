@@ -570,12 +570,20 @@ def fetch_photos(site, studios, report):
         if s["name"] in PHOTOS and PHOTOS[s["name"]] is None:
             (site / fn).unlink(missing_ok=True)
             continue
-        if do_fetch and not (site / fn).exists():
+        local = PHOTOS.get(s["name"])
+        if local and not local.startswith("http") and not do_fetch:
+            do_this = True
+        else:
+            do_this = do_fetch
+        if do_this and not (site / fn).exists():
             try:
                 from PIL import Image
                 import io
-                if PHOTOS.get(s["name"]):
-                    im = Image.open(io.BytesIO(_download(PHOTOS[s["name"]])))
+                src = PHOTOS.get(s["name"])
+                if src and not src.startswith("http"):
+                    im = Image.open(Path(__file__).resolve().parent / "photos" / src)
+                elif src:
+                    im = Image.open(io.BytesIO(_download(src)))
                 else:
                     im = best_photo(s["site"], s["name"], report)
                 if im is None:
