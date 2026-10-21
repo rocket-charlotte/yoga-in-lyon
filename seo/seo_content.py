@@ -204,3 +204,58 @@ STUDIOS_GUIDE = """
 <p><strong>Le style.</strong> Hatha pour débuter et travailler en douceur, Vinyasa pour un yoga dynamique, Yin pour récupérer, Iyengar pour la précision, Ashtanga pour une pratique structurée et exigeante. Chaque studio a sa spécialité : regardez les styles enseignés avant de vous inscrire.</p>
 <p><strong>Les horaires.</strong> Certains studios concentrent leurs cours le soir, d'autres ouvrent dès 7h ou le dimanche. Notre planning recense tous les créneaux de la semaine, studio par studio, pour trouver celui qui colle à votre emploi du temps.</p>
 """
+
+
+# ---------------------------------------------------------------------------
+# Guides (rubrique éditoriale). « kind » choisit le gabarit dans seo_build.py.
+GUIDES = [
+    {
+        "slug": "guide-yoga-lyon-en-chiffres",
+        "kind": "chiffres",
+        "titre": "Le yoga à Lyon en chiffres",
+        "court": "Le yoga à Lyon en chiffres",
+        "publie": "2026-10-21",
+        "chapo": "Combien de cours de yoga chaque semaine à Lyon, dans quels quartiers, à quelle heure et dans quels styles ? Nous avons compté, studio par studio.",
+    },
+    {
+        "slug": "guide-choisir-style-yoga",
+        "kind": "styles",
+        "titre": "Quel style de yoga choisir ? Le guide pour bien débuter à Lyon",
+        "court": "Quel style de yoga choisir ?",
+        "desc": "Hatha, Vinyasa, Yin, Iyengar, Ashtanga : comment choisir son style de yoga selon ses envies, et où pratiquer chaque style à Lyon.",
+        "publie": "2026-10-21",
+        "chapo": "Hatha, Vinyasa, Yin, Iyengar, Ashtanga… Les noms se ressemblent, les cours beaucoup moins. Voici comment choisir selon ce que vous cherchez, et où pratiquer chaque style à Lyon.",
+    },
+]
+
+# Comparatif du guide « Quel style choisir ». Clé = style des données.
+STYLE_GUIDE = {
+    "Hatha Yoga": ("Posé", "Débutants, tous âges, envie de bases solides",
+                   "Postures tenues plusieurs respirations, explications détaillées, relaxation finale."),
+    "Yoga Iyengar": ("Lent et précis", "Débutants, dos fragile, séniors, perfectionnistes",
+                     "Alignement très détaillé, accessoires pour adapter chaque posture, progression par niveaux."),
+    "Yin Yoga": ("Très doux", "Stress, récupération sportive, fin de journée",
+                 "Postures au sol tenues 3 à 5 minutes, relâchement profond."),
+    "Pranayama & Nidra": ("Immobile", "Sommeil, stress, curiosité pour la méditation",
+                          "Respiration, relaxation guidée allongée, méditation."),
+    "Yoga Vinyasa": ("Dynamique", "Sportifs, envie de bouger et de transpirer",
+                     "Enchaînements fluides calés sur le souffle, séances variées."),
+    "Ashtanga": ("Soutenu", "Pratiquants réguliers, goût de la discipline",
+                 "Série de postures fixe, toujours dans le même ordre, souvent tôt le matin."),
+    "Yoga Kundalini": ("Variable", "Énergie, méditation, approche plus spirituelle",
+                       "Mouvements répétés, respiration, mantras, méditation."),
+    "Renfo & Pilates": ("Dynamique", "Gainage, renforcement, complément d'un sport",
+                        "Yoga mêlé de Pilates et de renforcement musculaire."),
+    "Hot Yoga": ("Intense", "Pratiquants en bonne santé qui aiment l'effort",
+                 "Salle chauffée vers 35 à 40 °C ; déconseillé en cas de grossesse ou de problème cardiaque."),
+}
+
+STYLE_GUIDE_CHOIX = """
+<h2>Choisir selon ce que vous cherchez</h2>
+<p><strong>Vous débutez.</strong> Commencez par un cours de Hatha ou un cours « tous niveaux » : le rythme laisse le temps de comprendre chaque posture. L'Iyengar est aussi un excellent départ si vous aimez qu'on vous explique tout en détail.</p>
+<p><strong>Vous voulez vous détendre et mieux dormir.</strong> Le Yin yoga et le yoga Nidra sont faits pour ça. Un cours en fin de journée ou le dimanche soir donne souvent les meilleurs résultats.</p>
+<p><strong>Vous voulez transpirer.</strong> Le Vinyasa, l'Ashtanga et le hot yoga sont les plus physiques. Si vous débutez, cherchez les cours « niveau 1 », « bases » ou « tous niveaux ».</p>
+<p><strong>Vous avez mal au dos ou vous reprenez une activité.</strong> Privilégiez les cours d'Iyengar, de yoga doux ou de yoga adapté, prévenez le professeur, et demandez l'avis de votre médecin si vous avez un doute.</p>
+<p><strong>Vous êtes enceinte.</strong> Optez pour un cours de yoga prénatal plutôt qu'un cours classique, avec l'accord de votre sage-femme ou de votre médecin.</p>
+<p>Dans tous les cas, le bon cours est surtout celui qui tombe au bon endroit et au bon moment : un cours à côté de chez vous, c'est un cours que vous ne raterez pas.</p>
+"""

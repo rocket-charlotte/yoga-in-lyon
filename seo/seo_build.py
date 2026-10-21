@@ -32,7 +32,8 @@ from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from seo_content import COLLECTIONS, QUARTIERS, STUDIOS_GUIDE, STYLES  # noqa: E402
+from seo_content import (COLLECTIONS, GUIDES, QUARTIERS, STUDIOS_GUIDE, STYLE_GUIDE, STYLE_GUIDE_CHOIX,  # noqa: E402
+                         STYLES)
 from seo_profs import INDEPENDANTS, PROFS  # noqa: E402
 import shutil  # noqa: E402
 
@@ -41,6 +42,26 @@ JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"
 CRENEAUX = ["Matin", "Midi", "Après-midi", "Soir"]
 PLANNING = "Yoga_a_Lyon_Planning.html"
 TODAY = date.today().isoformat()
+MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre",
+        "novembre", "décembre"]
+
+
+def _git_date():
+    import subprocess
+    try:
+        out = subprocess.run(["git", "log", "-1", "--format=%cs"], cwd=Path(__file__).resolve().parent.parent,
+                             capture_output=True, text=True, timeout=10).stdout.strip()
+        return out if re.fullmatch(r"\d{4}-\d{2}-\d{2}", out) else TODAY
+    except Exception:
+        return TODAY
+
+
+DATA_DATE = _git_date()  # date du dernier commit = dernière vraie modification du contenu
+
+
+def date_fr(iso):
+    y, m, d = iso.split("-")
+    return f"{int(d)}{'er' if d == '01' else ''} {MOIS[int(m) - 1]} {y}"
 esc = html.escape
 
 
@@ -96,6 +117,26 @@ def replace_block(text, key, new, anchor_after=None, anchor_before=None):
         i = text.index(anchor_before)
         return text[:i] + block + "\n" + text[i:]
     return text
+
+
+BRAND = " | Yoga In Lyon"
+
+
+def brand(title):
+    """Titre Google : marque ajoutée seulement si le tout reste sous ~60 caractères."""
+    base = title.replace(BRAND, "").strip()
+    return base + BRAND if len(base) + len(BRAND) <= 61 else base
+
+
+def fit_desc(desc, n=158):
+    desc = re.sub(r"\s+", " ", desc).strip()
+    if len(desc) <= n:
+        return desc
+    i = desc[:n].rfind(". ")
+    if i >= 100:
+        return desc[:i + 1]
+    cut = desc[:n - 1].rsplit(" ", 1)[0].rstrip(" ,;:(–-.")
+    return cut + "…"
 
 
 def jsonld(obj):
@@ -216,8 +257,9 @@ def ensure_extra_css(text):
     return text.replace("</head>", css + "\n</head>", 1)
 
 
-def page_shell(chrome_parts, *, title, desc, canonical, body, ld, map_js=""):
+def page_shell(chrome_parts, *, title, desc, canonical, body, ld, map_js="", robots=""):
     style, header, footer = chrome_parts
+    title, desc = brand(title), fit_desc(desc)
     leaflet_css = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />' if map_js else ""
     leaflet_js = '<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>' if map_js else ""
     return f"""<!DOCTYPE html>
@@ -227,7 +269,7 @@ def page_shell(chrome_parts, *, title, desc, canonical, body, ld, map_js=""):
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
-<link rel="canonical" href="{BASE}{canonical}">
+{robots}<link rel="canonical" href="{BASE}{canonical}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Yoga In Lyon">
 <meta property="og:title" content="{esc(title)}">
@@ -242,6 +284,7 @@ def page_shell(chrome_parts, *, title, desc, canonical, body, ld, map_js=""):
 {style}
 <style id="seo-extra">{EXTRA_CSS}</style>
 {FAVICON}
+{GSTATIC}
 </head>
 <body>
 
@@ -297,9 +340,15 @@ def build_studio(s, studios, chrome_parts, profs_here=()):
     jours = [j for j in JOURS if any(c["jour"] == j for c in s["cours"])]
     styles_links = ", ".join(f'<a href="{style_page(t)}">{esc(t)}</a>' for t in s["styles"])
     loc = f'{s["quartier"]}, {s["arr"]}' if s["quartier"] and s["quartier"] != s["arr"] else s["arr"]
-    title = f'{s["name"]} — cours de yoga {s["arr"]} : horaires et planning | Yoga In Lyon'
+    title = f'{s["name"]} : yoga {s["arr"]}, horaires et planning'
+    if len(title) > 60:
+        title = f'{s["name"]} : cours de yoga {s["arr"]}'
+    if len(title) > 60:
+        title = f'{s["name"]}, yoga {s["arr"]}'
     desc = (f'{s["name"]} ({loc}) : {plural(n, "cours", "cours")} de yoga par semaine, '
             f'{list_fr(s["styles"][:3])}. Horaires vérifiés jour par jour.')
+    if len(desc) < 120:
+        desc += " Adresse, plan d'accès et réservation."
 
     # texte généré à partir des données (unique pour chaque studio)
     parts = [f'{esc(s["name"])} propose {plural(n, "cours de yoga", "cours de yoga")} par semaine '
@@ -352,7 +401,7 @@ def build_studio(s, studios, chrome_parts, profs_here=()):
 <div class="section">
   <h2>Planning de la semaine</h2>
   {schedule_html(s['cours'])}
-  <p class="note">Horaires relevés sur le site du studio. Vérifiez auprès de {esc(s['name'])} avant de vous déplacer (vacances, cours complets).</p>
+  <p class="note">Horaires relevés sur le site du studio, mis à jour le {date_fr(DATA_DATE)}. Vérifiez auprès de {esc(s['name'])} avant de vous déplacer (vacances, cours complets).</p>
 </div>
 {'<div class="section"><div id="studio-map"></div></div>' if s['geo'] else ''}
 {profs_section(profs_here, "Les profs de ce studio")}
@@ -376,9 +425,11 @@ def build_style(ts, data, studios, chrome_parts):
     cours = [c for c in data if c["type_simple"] == ts]
     sts = Counter(c["studio"] for c in cours)
     arrs = sorted({c["arr"] for c in cours}, key=arr_key)
-    title = f'{meta["titre"]} : {plural(len(sts), "studio", "studios")}, {len(cours)} cours/semaine | Yoga In Lyon'
-    desc = (f'{meta["titre"]} : {len(cours)} créneaux par semaine dans {plural(len(sts), "studio", "studios")} '
-            f'vérifiés ({list_fr(arrs[:4])}…). Horaires jour par jour.')
+    title = f'{meta["titre"]} : {plural(len(sts), "studio", "studios")}, {len(cours)} cours'
+    desc = (f'{meta["titre"]} : {len(cours)} cours par semaine dans {plural(len(sts), "studio", "studios")} '
+            f'({list_fr(arrs[:3])}). Horaires jour par jour, adresses et plan d\'accès des studios.')
+    if len(desc) > 158:
+        desc = desc.replace(", adresses et plan d'accès des studios.", " et adresses.")
     items = "".join(f'<a class="item" href="{studio_page(n)}"><strong>{esc(n)}</strong>'
                     f'<span>{esc(studios[n]["quartier"])} · {esc(studios[n]["arr"])} · {plural(k, "cours", "cours")}/sem.</span></a>'
                     for n, k in sts.most_common())
@@ -477,7 +528,7 @@ def build_prof(p, studios, chrome_parts):
     n = len(p["cours_all"])
     first = p["nom"].split()[0]
     lieux = p["studios"] + sorted({c["lieu"] for c in p["cours_all"] if c.get("lieu")})
-    title = f'{p["nom"]}, {p["titre"].lower()} à Lyon : cours et horaires | Yoga In Lyon'
+    title = f'{p["nom"]}, {p["titre"].lower()} à Lyon'
     desc = (f'{p["nom"]}, {p["titre"].lower()} à Lyon'
             + (f' : {list_fr(p["styles"][:3])}' if p["styles"] else "")
             + (f', {plural(n, "cours", "cours")} par semaine' if n else "")
@@ -553,8 +604,7 @@ PROFS_OFFER = """
 
 def patch_profs_page(text, profs, studios):
     n = len(profs)
-    title = ("Profs de yoga à Lyon : trouvez votre professeur | Yoga In Lyon" if n
-             else "Profs de yoga à Lyon : professeurs indépendants et studios | Yoga In Lyon")
+    title = "Profs de yoga à Lyon : trouvez votre professeur" if n else "Profs de yoga à Lyon"
     text = set_meta(text, title, "Les professeurs de yoga à Lyon : leurs cours dans les studios et en indépendant, "
                     "leurs styles et leurs horaires. Vous êtes prof ? Créez gratuitement votre page.")
     indep = [studios[s] for s in INDEPENDANTS if s in studios]
@@ -574,7 +624,149 @@ def patch_profs_page(text, profs, studios):
                f'<a href="{PLANNING}">Planning de la semaine</a></div></div>')
     text = re.sub(r'<section class="profs-section">.*?</section>\s*', "", text, count=1, flags=re.S)
     text = re.sub(r'<script>\s*function submitProfs.*?</script>\s*', "", text, count=1, flags=re.S)
+    text = replace_block(text, "pageld", jsonld({"@context": "https://schema.org", "@type": "CollectionPage",
+                         "name": "Profs de yoga à Lyon", "url": BASE + "Profs.html"})
+                         + jsonld(breadcrumb([("Accueil", "/"), ("Profs", "Profs.html")])), anchor_before="</head>")
     return replace_block(text, "profs", block, anchor_before='<footer class="site-footer">')
+
+
+def patch_about(text):
+    return replace_block(text, "pageld", jsonld({"@context": "https://schema.org", "@type": "AboutPage",
+                         "name": "Qui sommes-nous", "url": BASE + "A-propos.html",
+                         "about": {"@id": BASE + "#organization"}})
+                         + jsonld(breadcrumb([("Accueil", "/"), ("Qui sommes-nous", "A-propos.html")])),
+                         anchor_before="</head>")
+
+
+# --------------------------------------------------------------------------- guides
+def minutes(h):
+    m = re.fullmatch(r"(\d{2})h(\d{2})", h or "")
+    return int(m.group(1)) * 60 + int(m.group(2)) if m else None
+
+
+def bar_rows(rows, total, link=None):
+    """rows = [(label, value, extra_cells)] → lignes de tableau avec une barre proportionnelle."""
+    top = max(v for _, v, _ in rows) or 1
+    out = []
+    for label, v, extra in rows:
+        lab = f'<a href="{link(label)}">{esc(label)}</a>' if link and link(label) else esc(label)
+        out.append(f'<tr><td class="t">{lab}</td>{extra}<td style="width:42%"><div style="height:10px;border-radius:5px;'
+                   f'background:var(--lavender);width:{v / top * 100:.0f}%"></div></td>'
+                   f'<td class="s">{v} ({v / total * 100:.0f} %)</td></tr>')
+    return '<table class="slots">' + "".join(out) + "</table>"
+
+
+def article_shell(g, chrome_parts, body, studios):
+    title = g["titre"]
+    pub, mod = g["publie"], max(g["publie"], DATA_DATE)
+    head = f"""
+<nav class="crumbs" aria-label="Fil d'Ariane"><a href="/">Accueil</a> › <a href="guides.html">Guides</a> › {esc(g['court'])}</nav>
+<div class="quartier-hero"><div class="eyebrow">Guide · mis à jour le {date_fr(mod)}</div><h1>{esc(title)}</h1></div>
+<div class="seo-intro"><p><strong>{esc(g['chapo'])}</strong></p></div>
+"""
+    others = "".join(f'<a href="{o["slug"]}.html">{esc(o["court"])}</a>' for o in GUIDES if o["slug"] != g["slug"])
+    tail = (f'<div class="section"><h2>À lire aussi</h2><div class="pills">{others}'
+            f'<a href="Studios.html">Tous les studios</a><a href="{PLANNING}">Le planning de la semaine</a></div></div>')
+    ld = [{"@context": "https://schema.org", "@type": "Article", "headline": title, "description": g["chapo"],
+           "url": BASE + g["slug"] + ".html", "datePublished": pub, "dateModified": mod, "inLanguage": "fr-FR",
+           "image": BASE + "banner_web.jpg",
+           "author": {"@type": "Organization", "name": "Yoga In Lyon", "url": BASE},
+           "publisher": {"@type": "Organization", "name": "Yoga In Lyon", "logo": {"@type": "ImageObject",
+                                                                                  "url": BASE + "logo_web.png"}}},
+          breadcrumb([("Accueil", "/"), ("Guides", "guides.html"), (g["court"], g["slug"] + ".html")])]
+    return page_shell(chrome_parts, title=title, desc=g.get("desc", g["chapo"]), canonical=g["slug"] + ".html",
+                      body=head + body + tail, ld=ld)
+
+
+def build_guide_chiffres(g, data, studios, chrome_parts):
+    n, ns = len(data), len(studios)
+    st = Counter(c["type_simple"] for c in data).most_common()
+    ar = sorted(Counter(c["arr"] for c in data).items(), key=lambda x: arr_key(x[0]))
+    sts_by_arr = Counter(s["arr"] for s in studios.values())
+    days = [(j, sum(1 for c in data if c["jour"] == j)) for j in JOURS]
+    cren = [(k, sum(1 for c in data if c["creneau"] == k)) for k in ["Matin", "Midi", "Après-midi", "Soir"]]
+    top_arr = max(ar, key=lambda x: x[1])
+    busiest = max(days, key=lambda x: x[1])
+    soir = dict(cren)["Soir"]
+    week = [c for c in data if c["jour"] in JOURS[:5] and minutes(c["debut"]) is not None]
+    first = min(week, key=lambda c: minutes(c["debut"]))
+    last = max(data, key=lambda c: minutes(c["debut"]) or 0)
+    durs = [(minutes(c["fin"]) - minutes(c["debut"]), c) for c in data if minutes(c["fin"]) and minutes(c["debut"])]
+    longest = max(durs, key=lambda x: x[0])
+    sunday = sorted({c["studio"] for c in data if c["jour"] == "Dimanche"})
+    facts = "".join(f'<div class="fact"><div class="k">{k}</div><div class="v" style="font-size:26px;font-family:Fraunces,serif">{v}</div></div>'
+                    for k, v in [("Studios", ns), ("Cours par semaine", n), ("Zones couvertes", len(ar)),
+                                 ("Styles", len(st))])
+    body = f"""
+<div class="facts">{facts}</div>
+<div class="section"><h2>Le {esc(st[0][0])} représente {st[0][1] / n * 100:.0f} % des cours</h2>
+{bar_rows([(k, v, "") for k, v in st], n, link=lambda k: style_page(k) if k in STYLES else None)}</div>
+<div class="section"><h2>Le {esc(arr_label(top_arr[0]) if top_arr[0] != "Villeurbanne" else top_arr[0])} concentre le plus de cours</h2>
+{bar_rows([(a, v, f'<td class="s">{plural(sts_by_arr[a], "studio", "studios")}</td>') for a, v in ar], n, link=arr_page)}</div>
+<div class="section"><h2>Le soir domine : {soir / n * 100:.0f} % des cours ont lieu en soirée</h2>
+{bar_rows([(k, v, "") for k, v in cren], n)}
+<h3 style="font-size:18px;font-weight:500;margin:26px 0 8px">Le {busiest[0].lower()} est le jour le plus chargé</h3>
+{bar_rows([(k, v, "") for k, v in days], n)}</div>
+<div class="section seo-intro"><h2>Les records de la semaine</h2>
+<p><strong>Le plus matinal :</strong> {esc(first['type'])} chez <a href="{studio_page(first['studio'])}">{esc(first['studio'])}</a>, le {first['jour'].lower()} à {first['debut']}.</p>
+<p><strong>Le plus tardif :</strong> {esc(last['type'])} chez <a href="{studio_page(last['studio'])}">{esc(last['studio'])}</a>, le {last['jour'].lower()} à {last['debut']}.</p>
+<p><strong>Le plus long :</strong> {esc(longest[1]['type'])} chez <a href="{studio_page(longest[1]['studio'])}">{esc(longest[1]['studio'])}</a>, {longest[0] // 60}h{longest[0] % 60:02d} de pratique.</p>
+<p><strong>Le midi :</strong> {dict(cren)['Midi']} cours entre 12h et 14h, à retrouver sur notre page <a href="{COLLECTIONS['midi']['slug']}.html">yoga le midi</a>.</p>
+<p><strong>Le dimanche :</strong> {plural(len(sunday), "studio ouvre", "studios ouvrent")}, voir les <a href="{COLLECTIONS['weekend']['slug']}.html">cours du week-end</a>.</p></div>
+<div class="section seo-intro"><h2>Méthode</h2>
+<p>Ces chiffres sont calculés à partir du planning de Yoga In Lyon : les cours réguliers relevés sur les sites de {ns} studios de Lyon et Villeurbanne, mis à jour le {date_fr(DATA_DATE)}. Les stages, ateliers et cours ponctuels ne sont pas comptés. Ils se mettent à jour automatiquement avec le planning.</p>
+<p>Journalistes et blogueurs : ces chiffres sont libres de reprise avec un lien vers yoga-in-lyon.fr. Pour un classement sur mesure, écrivez à contact@yoga-in-lyon.fr.</p></div>
+"""
+    g = dict(g, titre=f"Le yoga à Lyon en chiffres : {ns} studios, {n} cours par semaine")
+    return article_shell(g, chrome_parts, body, studios)
+
+
+def build_guide_styles(g, data, studios, chrome_parts):
+    cnt = Counter(c["type_simple"] for c in data)
+    sts = defaultdict(set)
+    for c in data:
+        sts[c["type_simple"]].add(c["studio"])
+    rows = "".join(
+        f'<tr><td class="t"><a href="{style_page(s)}">{esc(s)}</a></td><td>{esc(r)}</td><td>{esc(w)}</td>'
+        f'<td class="s">{cnt[s]} cours, {plural(len(sts[s]), "studio", "studios")}</td></tr>'
+        for s, (r, w, _) in STYLE_GUIDE.items() if cnt.get(s))
+    detail = "".join(f'<p><strong><a href="{style_page(s)}">{esc(s)}</a>.</strong> {esc(d)}</p>'
+                     for s, (_, _, d) in STYLE_GUIDE.items() if cnt.get(s))
+    body = f"""
+<div class="section"><h2>Les styles de yoga en un coup d'œil</h2>
+<table class="slots"><tr><td class="t"><strong>Style</strong></td><td><strong>Rythme</strong></td><td><strong>Pour qui</strong></td><td class="s"><strong>À Lyon chaque semaine</strong></td></tr>{rows}</table></div>
+<div class="section seo-intro"><h2>À quoi ressemble un cours</h2>{detail}</div>
+<div class="section seo-intro">{STYLE_GUIDE_CHOIX}</div>
+<div class="section"><h2>Trouver un cours adapté</h2><div class="pills">{collections_pills()}</div></div>
+"""
+    return article_shell(g, chrome_parts, body, studios)
+
+
+def build_guides_index(chrome_parts):
+    items = "".join(f'<a class="item" href="{g["slug"]}.html"><strong>{esc(g["court"])}</strong>'
+                    f'<span>{esc(g["chapo"])}</span></a>' for g in GUIDES)
+    body = f"""
+<nav class="crumbs" aria-label="Fil d'Ariane"><a href="/">Accueil</a> › Guides</nav>
+<div class="quartier-hero"><div class="eyebrow">Yoga In Lyon</div><h1>Guides du yoga à Lyon</h1></div>
+<div class="seo-intro"><p>Nos guides pour choisir son cours, comprendre les styles de yoga et découvrir la pratique à Lyon, à partir des plannings de tous les studios.</p></div>
+<div class="section"><div class="studio-list">{items}</div></div>
+"""
+    ld = [{"@context": "https://schema.org", "@type": "CollectionPage", "name": "Guides du yoga à Lyon",
+           "url": BASE + "guides.html"}, breadcrumb([("Accueil", "/"), ("Guides", "guides.html")])]
+    return page_shell(chrome_parts, title="Guides du yoga à Lyon : styles, quartiers, horaires",
+                      desc="Les guides de Yoga In Lyon : quel style de yoga choisir pour débuter, le yoga à Lyon en "
+                           "chiffres, où et quand pratiquer. Basés sur les plannings de tous les studios.",
+                      canonical="guides.html", body=body, ld=ld)
+
+
+def build_404(chrome_parts):
+    body = f"""
+<div class="quartier-hero"><div class="eyebrow">Erreur 404</div><h1>Cette page n'existe pas (ou plus)</h1></div>
+<div class="seo-intro"><p>Le lien est peut-être ancien, ou le studio a changé de nom. Voici de quoi retrouver votre cours :</p></div>
+<div class="section"><div class="pills"><a href="/">Accueil</a><a href="Studios.html">Tous les studios</a><a href="{PLANNING}">Planning de la semaine</a><a href="guides.html">Guides</a></div></div>
+"""
+    return page_shell(chrome_parts, title="Page introuvable", desc="Cette page n'existe pas sur Yoga In Lyon.",
+                      canonical="404.html", body=body, ld=[], robots='<meta name="robots" content="noindex">\n')
 
 
 # --------------------------------------------------------------------------- thematic pages
@@ -601,7 +793,7 @@ def build_collection(key, data, studios, chrome_parts):
     sts = Counter(c["studio"] for c in cours)
     styles = [t for t, _ in Counter(c["type_simple"] for c in cours).most_common()]
     arrs = sorted({c["arr"] for c in cours}, key=arr_key)
-    title = f'{meta["titre"]} : {len(cours)} cours dans {plural(len(sts), "studio", "studios")} | Yoga In Lyon'
+    title = f'{meta["titre"]} : {len(cours)} cours, {plural(len(sts), "studio", "studios")}'
     desc = (f'{meta["titre"]} : {len(cours)} cours par semaine dans {plural(len(sts), "studio", "studios")} '
             f'vérifiés ({list_fr(arrs[:3])}). {list_fr(styles[:3])}. Horaires jour par jour.')
     items = "".join(f'<a class="item" href="{studio_page(n)}"><strong>{esc(n)}</strong>'
@@ -631,7 +823,7 @@ def build_collection(key, data, studios, chrome_parts):
 # --------------------------------------------------------------------------- patches
 def set_meta(text, title, desc):
     """Remplace <title>, meta description et leurs équivalents Open Graph / Twitter."""
-    t, d = esc(title), esc(desc)
+    t, d = esc(brand(title)), esc(fit_desc(desc))
     text = re.sub(r"<title>.*?</title>", lambda m: f"<title>{t}</title>", text, count=1, flags=re.S)
     for attr, val in (('name="description"', d), ('property="og:title"', t), ('property="og:description"', d),
                       ('name="twitter:title"', t), ('name="twitter:description"', d)):
@@ -639,12 +831,15 @@ def set_meta(text, title, desc):
     return text
 
 
+GSTATIC = '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
 FAVICON = ('<link rel="icon" href="/favicon.ico" sizes="any">'
            '<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">'
            '<link rel="apple-touch-icon" href="/apple-touch-icon.png">')
 
 
 def ensure_favicon(text):
+    if "fonts.gstatic.com" not in text:
+        text = text.replace("</head>", GSTATIC + "\n</head>", 1)
     if 'rel="apple-touch-icon"' in text:
         return text
     return text.replace("</head>", FAVICON + "\n</head>", 1)
@@ -664,6 +859,12 @@ def fix_links(text, studios, styles_present):
     text = re.sub(r'href="Yoga_a_Lyon_Planning\.html\?studio=([^"]+)"', repl, text)
     text = text.replace(">Voir leur planning →<", ">Voir le studio et ses horaires →<")
 
+    # lien Guides dans l'en-tête et le pied de page
+    if 'href="guides.html"' not in text:
+        text = re.sub(r'(<nav>.*?)(\s*<a href="A-propos\.html")', r'\1\n    <a href="guides.html" class="">Guides</a>\2',
+                      text, count=1, flags=re.S)
+        text = text.replace('<a href="Yoga_a_Lyon_Planning.html">Planning</a>',
+                            '<a href="Yoga_a_Lyon_Planning.html">Planning</a>\n        <a href="guides.html">Guides</a>', 1)
     # colonne Réseaux (liens vides) -> Styles de yoga
     styles_col = ('<div class="nav-col">\n        <div class="head">Styles de yoga</div>\n'
                   + "".join(f'        <a href="{STYLES[t]["slug"]}.html">{esc(t)}</a>\n' for t in STYLES if t in styles_present)
@@ -676,6 +877,23 @@ def fix_links(text, studios, styles_present):
 
 
 def patch_quartier(text, arr, data, studios):
+    cours = [c for c in data if c["arr"] == arr]
+    sts = [s for s in studios.values() if s["arr"] == arr]
+    quartiers = []
+    for s in sts:
+        for q in re.split(r"\s*/\s*|\s*\(", s["quartier"]):
+            q = q.strip(" )")
+            if q and q != arr and not q.startswith(("Cours", "Lyon")) and q not in quartiers:
+                quartiers.append(q)
+    styles = [x for x, _ in Counter(c["type_simple"] for c in cours).most_common(3)]
+    where = "à Villeurbanne" if arr == "Villeurbanne" else f"dans le {arr_label(arr)}"
+    short = [re.sub(r"^Yoga ", "", s) for s in styles[:2]]
+    text = set_meta(text, f"Yoga {arr} : {plural(len(sts), 'studio', 'studios')}, {len(cours)} cours par semaine",
+                    f"{plural(len(sts), 'studio', 'studios')} de yoga {where}"
+                    + (f" ({list_fr(quartiers[:2])})" if quartiers else "")
+                    + f", {len(cours)} cours par semaine : {list_fr(short)}. Adresses et horaires.")
+    text = replace_block(text, "gridh2", f'<div class="section" style="padding-bottom:0"><h2>Les studios de yoga · '
+                         f'{esc(arr)}</h2></div>', anchor_before='<div class="studios-grid-wrap">')
     intro = QUARTIERS.get(arr, "")
     if intro:
         text = replace_block(text, "intro", f'<div class="seo-intro">{intro}</div>',
@@ -693,6 +911,19 @@ def patch_quartier(text, arr, data, studios):
 
 
 def patch_planning(text, data, styles_present):
+    n_s = len({c["studio"] for c in data})
+    text = set_meta(text, f"Planning des cours de yoga à Lyon : {len(data)} cours par semaine",
+                    f"Le planning complet des cours de yoga à Lyon : {len(data)} créneaux vérifiés dans {n_s} studios, "
+                    "filtrables par style, jour, horaire et arrondissement.")
+    text = re.sub(r'<img src="banner_web\.jpg" alt="">',
+                  '<img src="banner_web.jpg" alt="Cours de yoga au bord de la Saône à Lyon" width="1920" height="814">',
+                  text, count=1)
+    text = replace_block(text, "updated", f'<p class="note" style="max-width:1180px;margin:0 auto;padding:0 24px">'
+                         f'Planning mis à jour le {date_fr(DATA_DATE)}.</p>', anchor_before='<div class="layout">')
+    text = replace_block(text, "pageld", jsonld({"@context": "https://schema.org", "@type": "CollectionPage",
+                         "name": "Planning des cours de yoga à Lyon", "url": BASE + PLANNING,
+                         "dateModified": DATA_DATE, "isPartOf": {"@id": BASE + "#website"}})
+                         + jsonld(breadcrumb([("Accueil", "/"), ("Planning", PLANNING)])), anchor_before="</head>")
     # rendu statique du planning : visible par Google, remplacé par le JS au chargement
     static = '<div class="seo-static">' + schedule_html(data, show_studio=True, heading="h2") + "</div>"
     text = re.sub(r'(<div id="results">)(?:<!--seo:static-->.*?<!--/seo:static-->)?',
@@ -706,9 +937,9 @@ def patch_planning(text, data, styles_present):
 
 def patch_studios_page(text, data, studios):
     n_s, n_c = len(studios), len(data)
-    text = set_meta(text, f"Les {n_s} studios de yoga à Lyon : adresses, styles et horaires | Yoga In Lyon",
-                    f"Annuaire des {n_s} studios de yoga à Lyon et Villeurbanne vérifiés à la main : adresse, quartier, "
-                    f"styles enseignés et planning détaillé de chaque studio ({n_c} cours par semaine).")
+    text = set_meta(text, f"Studios de yoga à Lyon : adresses, styles et horaires",
+                    f"Les {n_s} studios de yoga de Lyon et Villeurbanne, vérifiés à la main : adresse, quartier, "
+                    f"styles et planning de chaque studio.")
     text = re.sub(r"<h1>Trouver un studio de yoga à Lyon</h1>",
                   f"<h1>Studios de yoga à Lyon : les {n_s} adresses vérifiées</h1>", text, count=1)
 
@@ -761,16 +992,23 @@ def patch_studios_page(text, data, studios):
 
 def patch_home(text, styles_present, data, studios):
     n_s, n_c = len(studios), len(data)
-    text = set_meta(text, f"Studio de yoga à Lyon : {n_s} studios et {n_c} cours par semaine | Yoga In Lyon",
+    text = set_meta(text, f"Studio de yoga à Lyon : les {n_s} adresses et leurs cours",
                     f"Trouvez votre studio de yoga à Lyon : {n_s} studios vérifiés à la main, {n_c} cours par semaine, "
                     "du 1er au 9e arrondissement et à Villeurbanne. Planning filtrable par style, jour et quartier.")
     text = re.sub(r'<img src="banner_web\.jpg"(?![^>]*fetchpriority)',
                   '<img src="banner_web.jpg" width="1920" height="814" fetchpriority="high"', text, count=1)
+    text = replace_block(text, "orgld", jsonld({"@context": "https://schema.org", "@type": "Organization",
+                         "@id": BASE + "#organization", "name": "Yoga In Lyon", "url": BASE,
+                         "logo": BASE + "logo_web.png", "email": "contact@yoga-in-lyon.fr",
+                         "areaServed": {"@type": "City", "name": "Lyon"}}), anchor_before="</head>")
     pills = "".join(f'<a href="{STYLES[t]["slug"]}.html">{esc(t)}</a>' for t in STYLES if t in styles_present)
     block = (f'<section class="quartiers-section"><div class="inner"><h2>Le yoga par style</h2>'
              f'<div class="quartiers-links">{pills}</div></div></section>'
              f'<section class="quartiers-section"><div class="inner"><h2>Trouver un cours selon vos envies</h2>'
              f'<div class="quartiers-links">{collections_pills()}</div></div></section>'
+             f'<section class="quartiers-section"><div class="inner"><h2>Nos guides</h2><div class="quartiers-links">'
+             + "".join(f'<a href="{g["slug"]}.html">{esc(g["court"])}</a>' for g in GUIDES)
+             + '</div></div></section>'
              f'<section class="quartiers-section"><div class="inner"><h2>Les studios de yoga à Lyon</h2>'
              f'<div class="quartiers-links">'
              + "".join(f'<a href="{studio_page(n)}">{esc(n)}</a>' for n in sorted(studios, key=str.lower))
@@ -820,6 +1058,13 @@ def main(site):
         fn = COLLECTIONS[key]["slug"] + ".html"
         (site / fn).write_text(build_collection(key, data, studios, chrome_parts), encoding="utf-8")
         generated.append(fn)
+    builders = {"chiffres": build_guide_chiffres, "styles": build_guide_styles}
+    for g in GUIDES:
+        (site / (g["slug"] + ".html")).write_text(builders[g["kind"]](g, data, studios, chrome_parts), encoding="utf-8")
+        generated.append(g["slug"] + ".html")
+    (site / "guides.html").write_text(build_guides_index(chrome_parts), encoding="utf-8")
+    (site / "404.html").write_text(build_404(chrome_parts), encoding="utf-8")
+    generated += ["guides.html", "404.html"]
     unknown = styles_present - set(STYLES)
     if unknown:
         report.append("Styles sans texte dans seo_content.py : " + ", ".join(sorted(unknown)))
@@ -843,14 +1088,17 @@ def main(site):
             t = patch_studios_page(t, data, studios)
         if p.name == "Profs.html":
             t = patch_profs_page(t, profs, studios)
+        if p.name == "A-propos.html":
+            t = patch_about(t)
         if t != t0:
             p.write_text(t, encoding="utf-8")
 
     # sitemap / robots / htaccess
-    pages = sorted(p.name for p in site.glob("*.html") if p.name not in ("Accueil.html",) and not p.name.startswith("_"))
+    pages = sorted(p.name for p in site.glob("*.html") if p.name not in ("Accueil.html", "404.html")
+                   and not p.name.startswith("_"))
     urls = [BASE] + [BASE + n for n in pages if n != "index.html"]
     sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-    sm += [f"  <url><loc>{esc(u)}</loc><lastmod>{TODAY}</lastmod></url>" for u in urls]
+    sm += [f"  <url><loc>{esc(u)}</loc><lastmod>{DATA_DATE}</lastmod></url>" for u in urls]
     sm.append("</urlset>")
     (site / "sitemap.xml").write_text("\n".join(sm) + "\n", encoding="utf-8")
     (site / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {BASE}sitemap.xml\n", encoding="utf-8")
@@ -872,7 +1120,7 @@ def main(site):
             if k in s["name"].lower() and ts not in s["styles"]:
                 report.append(f"« {s['name']} » n'a aucun cours classé {ts} dans le planning")
 
-    print(f"OK : {len(profs)} pages prof, {len(studios)} pages studio, {len(generated) - len(studios) - len(profs)} pages style/thématiques, "
+    print(f"OK : {len(profs)} pages prof, {len(studios)} pages studio, {len(generated) - len(studios) - len(profs) - len(GUIDES) - 2} pages style/thématiques, {len(GUIDES)} guides, "
           f"{len(urls)} URL dans sitemap.xml")
     for r in report:
         print("  ⚠ " + r)
