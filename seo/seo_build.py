@@ -481,15 +481,84 @@ def _download(url, timeout=20):
         return r.read(8_000_000)
 
 
-def find_og_image(site_url):
-    page = _download(site_url).decode("utf-8", "ignore")
+def page_images(page_url):
+    """Images candidates d'une page : og:image d'abord, puis les <img> (srcset le plus grand) et les fonds CSS."""
+    page = _download(page_url).decode("utf-8", "ignore")
+    out = []
     for pat in (r'<meta[^>]+property=["\']og:image(?::secure_url)?["\'][^>]+content=["\']([^"\']+)',
                 r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image',
                 r'<meta[^>]+name=["\']twitter:image["\'][^>]+content=["\']([^"\']+)'):
-        m = re.search(pat, page, re.I)
-        if m:
-            return urllib.parse.urljoin(site_url, html.unescape(m.group(1)))
-    return None
+        out += re.findall(pat, page, re.I)
+    for tag in re.findall(r"<img\b[^>]*>", page, re.I):
+        srcset = re.search(r'(?:data-)?srcset=["\']([^"\']+)', tag)
+        if srcset:
+            parts = [s.strip().split(" ") for s in srcset.group(1).split(",") if s.strip()]
+            best = max(parts, key=lambda x: int(re.sub(r"\D", "", x[-1]) or 0) if len(x) > 1 else 0)
+            out.append(best[0])
+        for attr in ("data-src", "data-lazy-src", "src"):
+            m = re.search(rf'\b{attr}=["\']([^"\']+)', tag)
+            if m and not m.group(1).startswith("data:"):
+                out.append(m.group(1))
+                break
+    out += re.findall(r"background(?:-image)?\s*:\s*url\(['\"]?([^'\")]+)", page, re.I)
+    seen, res = set(), []
+    for u in out:
+        u = urllib.parse.urljoin(page_url, html.unescape(u.strip()))
+        low = u.lower()
+        if u in seen or not low.startswith("http") or re.search(r"logo|icon|favicon|sprite|avatar|\.svg|\.gif", low):
+            continue
+        seen.add(u)
+        res.append(u)
+    return res
+
+
+def looks_like_photo(im):
+    """Vraie photo plutôt que logo, bannière texte ou capture : assez grande, pas trop étroite, beaucoup de couleurs."""
+    w, h = im.size
+    if w < 600 or not (0.6 <= w / h <= 2.6):
+        return False
+    small = im.convert("RGB").resize((64, 64))
+    if len(set(small.getdata())) <= 2200:
+        return False
+    # aplats (logos, bannières, captures, dégradés) : beaucoup de pixels presque identiques à leur voisin
+    g = im.convert("L").resize((128, 128))
+    px = list(g.getdata())
+    diffs = [abs(px[i] - px[i + 1]) for i in range(len(px) - 1) if (i + 1) % 128]
+    flat = sum(1 for d in diffs if d < 2) / len(diffs)
+    return flat < 0.6
+
+
+def best_photo(site_url, report_name, report):
+    from PIL import Image
+    import io
+    pages = [site_url]
+    root = "{0.scheme}://{0.netloc}/".format(urllib.parse.urlparse(site_url))
+    if root.rstrip("/") != site_url.rstrip("/"):
+        pages.append(root)
+    cands = []
+    for pg in pages:
+        try:
+            cands += [u for u in page_images(pg) if u not in cands]
+        except Exception:
+            continue
+    best = None
+    og = [u for u in cands[:2]]  # l'image principale choisie par le studio passe en premier si c'est une vraie photo
+    for u in cands[:14]:
+        try:
+            im = Image.open(io.BytesIO(_download(u)))
+            im.load()
+        except Exception:
+            continue
+        if looks_like_photo(im):
+            if u in og:
+                return im
+            area = im.size[0] * im.size[1]
+            if not best or area > best[0]:
+                best = (area, im, u)
+    if not best:
+        report.append(f"Photo : aucune vraie photo trouvée sur le site de « {report_name} » ({len(cands)} images vues)")
+        return None
+    return best[1]
 
 
 def fetch_photos(site, studios, report):
@@ -505,15 +574,13 @@ def fetch_photos(site, studios, report):
             try:
                 from PIL import Image
                 import io
-                url = PHOTOS.get(s["name"]) or find_og_image(s["site"])
-                if not url:
-                    report.append(f"Photo : pas d'image principale trouvée sur le site de « {s['name']} »")
+                if PHOTOS.get(s["name"]):
+                    im = Image.open(io.BytesIO(_download(PHOTOS[s["name"]])))
+                else:
+                    im = best_photo(s["site"], s["name"], report)
+                if im is None:
                     continue
-                im = Image.open(io.BytesIO(_download(url)))
                 w, h = im.size
-                if w < 500 or (0.8 < w / h < 1.25 and w < 900):
-                    report.append(f"Photo : image trop petite ou carrée (logo ?) pour « {s['name']} » ({w}x{h}) : {url}")
-                    continue
                 im = im.convert("RGB")
                 if w > 1200:
                     im = im.resize((1200, round(h * 1200 / w)), Image.LANCZOS)
