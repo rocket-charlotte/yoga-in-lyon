@@ -22,6 +22,7 @@ Ce qu'il fait :
   7. Écrit sitemap.xml et robots.txt (et .htaccess s'il n'existe pas).
 """
 import html
+import os
 import json
 import re
 import sys
@@ -35,6 +36,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from seo_content import (APROPOS_HISTOIRE, APROPOS_INTRO, COLLECTIONS, GUIDES, QUARTIERS, STUDIOS_GUIDE, STYLE_GUIDE, STYLE_GUIDE_CHOIX,  # noqa: E402
                          STYLES)
 from seo_profs import INDEPENDANTS, PROFS  # noqa: E402
+from seo_photos import PHOTOS  # noqa: E402
 import shutil  # noqa: E402
 
 BASE = "https://yoga-in-lyon.fr/"
@@ -245,6 +247,10 @@ EXTRA_CSS = """
   .quartier-hero .eyebrow { font-size: 12px; font-weight: 700; color: #9B7FB0; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
   .quartier-hero h1 { font-size: 32px; font-weight: 500; margin: 0 0 14px; }
   .seo-intro ul { color: #5a4a68; font-size: 15.5px; line-height: 1.7; max-width: 760px; margin: 0 0 14px; padding-left: 22px; }
+  .studio-figure { max-width: 1180px; margin: 0 auto; padding: 0 24px 18px; }
+  .studio-figure img { width: 100%; height: auto; max-height: 460px; object-fit: cover; border-radius: 18px; display: block; }
+  .studio-figure figcaption { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .studio-list a.item img.thumb { width: 100%; height: 150px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; display: block; }
   .faq h3 { font-size: 18px; font-weight: 500; margin: 22px 0 6px; }
   .seo-intro h2 { font-size: 24px; font-weight: 500; margin: 32px 0 14px; }
   .seo-intro h2:first-child { margin-top: 0; }
@@ -258,7 +264,7 @@ def ensure_extra_css(text):
     return text.replace("</head>", css + "\n</head>", 1)
 
 
-def page_shell(chrome_parts, *, title, desc, canonical, body, ld, map_js="", robots=""):
+def page_shell(chrome_parts, *, title, desc, canonical, body, ld, map_js="", robots="", og_image=None):
     style, header, footer = chrome_parts
     title, desc = brand(title), fit_desc(desc)
     leaflet_css = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />' if map_js else ""
@@ -275,7 +281,7 @@ def page_shell(chrome_parts, *, title, desc, canonical, body, ld, map_js="", rob
 <meta property="og:site_name" content="Yoga In Lyon">
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:description" content="{esc(desc)}">
-<meta property="og:image" content="{BASE}banner_web.jpg">
+<meta property="og:image" content="{BASE}{og_image or 'banner_web.jpg'}">
 <meta property="og:url" content="{BASE}{canonical}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -379,18 +385,24 @@ def build_studio(s, studios, chrome_parts, profs_here=()):
         others = [o for o in studios.values() if o["geo"] and o["name"] != s["name"] and o not in same]
         others.sort(key=lambda o: (o["geo"][0] - s["geo"][0]) ** 2 + ((o["geo"][1] - s["geo"][1]) * 0.7) ** 2)
         same += others[:4 - len(same)]
-    near = "".join(f'<a class="item" href="{studio_page(o["name"])}"><strong>{esc(o["name"])}</strong>'
+    near = "".join(f'<a class="item" href="{studio_page(o["name"])}">{thumb(o)}<strong>{esc(o["name"])}</strong>'
                    f'<span>{esc(o["quartier"])} · {plural(len(o["cours"]), "cours", "cours")}/sem. · {esc(list_fr(o["styles"][:3]))}</span></a>'
                    for o in same)
     near_html = (f'<div class="section"><h2>Studios de yoga à proximité</h2>'
                  f'<div class="studio-list">{near}</div></div>') if same else ""
 
+    photo_html = ""
+    if s.get("photo"):
+        fn, w, h = s["photo"]
+        photo_html = (f'<figure class="studio-figure"><img src="{fn}" alt="{esc(photo_alt(s))}" width="{w}" height="{h}" '
+                      f'fetchpriority="high"><figcaption>Photo : {esc(s["name"])}</figcaption></figure>')
     body = f"""
 <nav class="crumbs" aria-label="Fil d'Ariane"><a href="/">Accueil</a> › <a href="Studios.html">Studios</a> › <a href="{arr_page(s['arr'])}">{esc(s['arr'])}</a> › {esc(s['name'])}</nav>
 <div class="quartier-hero">
   <div class="eyebrow">{esc(loc)}</div>
   <h1>{esc(s['name'])} : cours de yoga à {esc(s['quartier'] if s['quartier'] != s['arr'] else s['arr'])}</h1>
 </div>
+{photo_html}
 <div class="seo-intro">{intro}</div>
 <div class="facts">
   <div class="fact"><div class="k">Adresse</div><div class="v">{esc(s['adresse'])}</div></div>
@@ -414,10 +426,13 @@ def build_studio(s, studios, chrome_parts, profs_here=()):
            "description": re.sub(r"<[^>]+>", "", auto)}
     if s["geo"]:
         gym["geo"] = {"@type": "GeoCoordinates", "latitude": s["geo"][0], "longitude": s["geo"][1]}
+    if s.get("photo"):
+        gym["image"] = BASE + s["photo"][0]
     ld = [gym, breadcrumb([("Accueil", "/"), ("Studios", "Studios.html"), (s["arr"], arr_page(s["arr"])),
                            (s["name"], studio_page(s["name"]))])]
     return page_shell(chrome_parts, title=title, desc=desc, canonical=studio_page(s["name"]), body=body, ld=ld,
-                      map_js=map_script([(s["name"], s["geo"])]) if s["geo"] else "")
+                      map_js=map_script([(s["name"], s["geo"])]) if s["geo"] else "",
+                      og_image=s["photo"][0] if s.get("photo") else None)
 
 
 # --------------------------------------------------------------------------- style pages
@@ -431,7 +446,7 @@ def build_style(ts, data, studios, chrome_parts):
             f'({list_fr(arrs[:3])}). Horaires jour par jour, adresses et plan d\'accès des studios.')
     if len(desc) > 158:
         desc = desc.replace(", adresses et plan d'accès des studios.", " et adresses.")
-    items = "".join(f'<a class="item" href="{studio_page(n)}"><strong>{esc(n)}</strong>'
+    items = "".join(f'<a class="item" href="{studio_page(n)}">{thumb(studios[n])}<strong>{esc(n)}</strong>'
                     f'<span>{esc(studios[n]["quartier"])} · {esc(studios[n]["arr"])} · {plural(k, "cours", "cours")}/sem.</span></a>'
                     for n, k in sts.most_common())
     others = "".join(f'<a href="{v["slug"]}.html">{esc(k)}</a>' for k, v in STYLES.items() if k != ts)
@@ -452,6 +467,95 @@ def build_style(ts, data, studios, chrome_parts):
                                for i, (n, _) in enumerate(sts.most_common())]},
           breadcrumb([("Accueil", "/"), ("Planning", PLANNING), (ts, meta["slug"] + ".html")])]
     return page_shell(chrome_parts, title=title, desc=desc, canonical=meta["slug"] + ".html", body=body, ld=ld)
+
+
+# --------------------------------------------------------------------------- photos
+def photo_file(name):
+    return "photo-" + re.sub(r"^studio-", "", slugify(name)) + ".jpg"
+
+
+def _download(url, timeout=20):
+    import urllib.request
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (YogaInLyon photo fetch; contact@yoga-in-lyon.fr)"})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return r.read(8_000_000)
+
+
+def find_og_image(site_url):
+    page = _download(site_url).decode("utf-8", "ignore")
+    for pat in (r'<meta[^>]+property=["\']og:image(?::secure_url)?["\'][^>]+content=["\']([^"\']+)',
+                r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image',
+                r'<meta[^>]+name=["\']twitter:image["\'][^>]+content=["\']([^"\']+)'):
+        m = re.search(pat, page, re.I)
+        if m:
+            return urllib.parse.urljoin(site_url, html.unescape(m.group(1)))
+    return None
+
+
+def fetch_photos(site, studios, report):
+    """Télécharge (en déploiement seulement : SEO_FETCH_PHOTOS=1) puis attache s["photo"]."""
+    do_fetch = os.environ.get("SEO_FETCH_PHOTOS") == "1"
+    for s in studios.values():
+        fn = photo_file(s["name"])
+        s["photo"] = None
+        if s["name"] in PHOTOS and PHOTOS[s["name"]] is None:
+            (site / fn).unlink(missing_ok=True)
+            continue
+        if do_fetch and not (site / fn).exists():
+            try:
+                from PIL import Image
+                import io
+                url = PHOTOS.get(s["name"]) or find_og_image(s["site"])
+                if not url:
+                    report.append(f"Photo : pas d'image principale trouvée sur le site de « {s['name']} »")
+                    continue
+                im = Image.open(io.BytesIO(_download(url)))
+                w, h = im.size
+                if w < 500 or (0.8 < w / h < 1.25 and w < 900):
+                    report.append(f"Photo : image trop petite ou carrée (logo ?) pour « {s['name']} » ({w}x{h}) : {url}")
+                    continue
+                im = im.convert("RGB")
+                if w > 1200:
+                    im = im.resize((1200, round(h * 1200 / w)), Image.LANCZOS)
+                im.save(site / fn, "JPEG", quality=76, optimize=True, progressive=True)
+            except Exception as e:  # réseau, format…
+                report.append(f"Photo : échec pour « {s['name']} » ({type(e).__name__})")
+                continue
+        if (site / fn).exists():
+            try:
+                from PIL import Image
+                with Image.open(site / fn) as im:
+                    s["photo"] = (fn, im.size[0], im.size[1])
+            except Exception:
+                s["photo"] = (fn, 1200, 800)
+
+
+def photo_alt(s):
+    return f'{s["name"]}, studio de yoga à {s["quartier"] if s["quartier"] != s["arr"] else s["arr"]}'
+
+
+def thumb(s):
+    if not s.get("photo"):
+        return ""
+    fn, w, h = s["photo"]
+    return f'<img class="thumb" src="{fn}" alt="{esc(photo_alt(s))}" width="{w}" height="{h}" loading="lazy">'
+
+
+def patch_cards(text, studios):
+    """Remplace l'emoji des cartes studio par la photo du studio quand elle existe."""
+    by_name = {html.unescape(n): s for n, s in studios.items()}
+
+    def repl(m):
+        s = by_name.get(html.unescape(m.group(3)).strip())
+        if not s or not s.get("photo"):
+            return m.group(0)
+        fn, w, h = s["photo"]
+        kind = m.group(1)
+        img = (f'<div class="{kind}-photo"><img src="{fn}" alt="{esc(photo_alt(s))}" width="{w}" height="{h}" '
+               f'loading="lazy" style="width:100%;height:100%;object-fit:cover"></div>')
+        return img + m.group(2)
+    return re.sub(r'<div class="(studio|feature)-photo" style="[^"]*"><span>[^<]*</span></div>((?:\s*<div class="(?:studio|feature)-body">)\s*'
+                  r'<(?:div|h3) class="(?:studio|feature)-name">([^<]+)<)', repl, text)
 
 
 # --------------------------------------------------------------------------- profs
@@ -818,7 +922,7 @@ def build_collection(key, data, studios, chrome_parts):
     title = f'{meta["titre"]} : {len(cours)} cours, {plural(len(sts), "studio", "studios")}'
     desc = (f'{meta["titre"]} : {len(cours)} cours par semaine dans {plural(len(sts), "studio", "studios")} '
             f'vérifiés ({list_fr(arrs[:3])}). {list_fr(styles[:3])}. Horaires jour par jour.')
-    items = "".join(f'<a class="item" href="{studio_page(n)}"><strong>{esc(n)}</strong>'
+    items = "".join(f'<a class="item" href="{studio_page(n)}">{thumb(studios[n])}<strong>{esc(n)}</strong>'
                     f'<span>{esc(studios[n]["quartier"])} · {esc(studios[n]["arr"])} · {plural(k, "cours", "cours")}/sem.</span></a>'
                     for n, k in sts.most_common())
     style_pills = "".join(f'<a href="{style_page(t)}">{esc(t)}</a>' for t in styles if t in STYLES)
@@ -1053,6 +1157,7 @@ def main(site):
     report = []
 
     generated = []
+    fetch_photos(site, studios, report)
     profs = resolve_profs(data, studios, report)
     photos_dir = Path(__file__).resolve().parent / "profs"
     for p in profs:
@@ -1086,6 +1191,15 @@ def main(site):
         generated.append(g["slug"] + ".html")
     (site / "guides.html").write_text(build_guides_index(chrome_parts), encoding="utf-8")
     (site / "404.html").write_text(build_404(chrome_parts), encoding="utf-8")
+    sheet = "".join(f'<figure style="margin:0"><img src="{s["photo"][0]}" style="width:100%;height:180px;object-fit:cover;'
+                    f'border-radius:10px"><figcaption style="font:13px sans-serif">{esc(s["name"])}</figcaption></figure>'
+                    if s.get("photo") else f'<figure style="margin:0;height:180px;background:#eee;border-radius:10px;'
+                    f'display:flex;align-items:center;justify-content:center;font:13px sans-serif">Sans photo : {esc(s["name"])}</figure>'
+                    for s in studios.values())
+    (site / "_photos.html").write_text('<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="robots" '
+                                       'content="noindex"><title>Photos</title></head><body style="margin:16px">'
+                                       '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px">'
+                                       + sheet + "</div></body></html>", encoding="utf-8")
     generated += ["guides.html", "404.html"]
     unknown = styles_present - set(STYLES)
     if unknown:
@@ -1100,6 +1214,7 @@ def main(site):
         t = p.read_text(encoding="utf-8")
         t0 = t
         t = patch_common(t, studios, styles_present)
+        t = patch_cards(t, studios)
         if p.name in arr_by_page:
             t = patch_quartier(t, arr_by_page[p.name], data, studios)
         if p.name == PLANNING:
