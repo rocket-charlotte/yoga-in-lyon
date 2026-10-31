@@ -226,6 +226,31 @@ GUIDES = [
         "chapo": "Combien de cours de yoga chaque semaine à Lyon, dans quels quartiers, à quelle heure et dans quels styles ? Nous avons compté, studio par studio.",
     },
     {
+        "slug": "prix-cours-yoga-lyon",
+        "kind": "prix",
+        "titre": "Prix d'un cours de yoga à Lyon : combien ça coûte ?",
+        "court": "Prix d'un cours de yoga à Lyon",
+        "publie": "2026-10-31",
+        "chapo": "",
+    },
+    {
+        "slug": "cours-essai-yoga-lyon",
+        "kind": "essai",
+        "titre": "Cours de yoga d'essai gratuit à Lyon : où tester ?",
+        "court": "Cours d'essai gratuits à Lyon",
+        "publie": "2026-10-31",
+        "chapo": "",
+    },
+    {
+        "slug": "premier-cours-yoga",
+        "kind": "premier",
+        "titre": "Premier cours de yoga : comment ça se passe et quoi apporter",
+        "court": "Votre premier cours de yoga",
+        "publie": "2026-10-31",
+        "chapo": "Vous n'avez jamais fait de yoga et vous hésitez à franchir la porte d'un studio ? Voici comment se déroule une première séance, quoi apporter et comment choisir le bon cours, pour arriver serein.",
+        "desc": "Premier cours de yoga : déroulé d'une séance, tenue, tapis, ce qu'il faut dire au professeur et comment choisir son cours à Lyon. Le guide pour arriver serein.",
+    },
+    {
         "slug": "guide-choisir-style-yoga",
         "kind": "styles",
         "titre": "Quel style de yoga choisir ? Le guide pour bien débuter à Lyon",
@@ -284,4 +309,45 @@ APROPOS_HISTOIRE = """
 <p>J'ai créé Yoga In Lyon pour ça : réunir au même endroit tous les cours de la ville, pour que chacun trouve le sien sans y passer des heures.</p>
 <p>Le site a aussi une autre ambition : mettre en avant le tissu lyonnais du yoga, ses studios, ses profs et ses lieux de quartier, et réunir tous celles et ceux qui s'y intéressent, de près ou de loin.</p>
 <p><em>Charlotte, fondatrice de Yoga In Lyon</em></p>
+"""
+
+
+# ---------------------------------------------------------------------------
+# Article « Premier cours de yoga ». {debutant} est remplacé par le nombre de cours débutants.
+PREMIER_COURS = """
+<h2>Faut-il être souple pour commencer le yoga ?</h2>
+<p>Non. C'est la question qui revient le plus souvent, et la réponse est toujours la même : on ne vient pas au yoga parce qu'on est souple, on le devient (un peu) en pratiquant. Dans un cours pour débutants, le professeur propose des variantes plus simples de chaque posture et personne ne regarde ce que fait son voisin.</p>
+
+<h2>Comment se déroule une séance</h2>
+<p>Un cours dure en général entre 1h et 1h30. Le déroulé varie selon le style, mais on retrouve presque toujours trois temps :</p>
+<ul>
+<li><strong>Un temps d'arrivée</strong> : quelques minutes assis ou allongé, pour poser la respiration et laisser la journée derrière soi.</li>
+<li><strong>Les postures</strong> : debout, au sol, en équilibre, avec des enchaînements plus ou moins dynamiques. Le professeur montre, explique et passe corriger.</li>
+<li><strong>La relaxation finale</strong> : 5 à 10 minutes allongé sur le dos (la posture s'appelle savasana). C'est souvent le moment préféré des débutants : restez jusqu'au bout.</li>
+</ul>
+
+<h2>Quoi apporter</h2>
+<ul>
+<li><strong>Une tenue souple</strong> dans laquelle vous êtes à l'aise pour bouger : legging ou pantalon de sport, t-shirt pas trop large (il retombe sur le visage tête en bas). On pratique pieds nus.</li>
+<li><strong>Un tapis ?</strong> Pas forcément. Beaucoup de studios prêtent tapis et accessoires, c'est le cas par exemple au Centre de Yoga Iyengar, à la Yoga Room ou chez Yeahga. Demandez au moment de réserver.</li>
+<li><strong>Une petite bouteille d'eau</strong>, et une serviette pour un cours dynamique ou chauffé.</li>
+<li><strong>Une couche de plus</strong> (pull, chaussettes) pour la relaxation finale, quand le corps se refroidit.</li>
+</ul>
+
+<h2>Avant le cours</h2>
+<ul>
+<li><strong>Réservez</strong> : la plupart des studios lyonnais fonctionnent sur réservation en ligne, et certains cours sont vite complets.</li>
+<li><strong>Arrivez 10 minutes en avance</strong> pour vous installer et vous présenter.</li>
+<li><strong>Évitez un repas copieux</strong> dans les deux heures qui précèdent : on se plie, on se tourne, on passe parfois la tête en bas.</li>
+<li><strong>Prévenez le professeur</strong> que c'est votre premier cours, et signalez toute douleur, blessure récente ou grossesse. Il adaptera les postures.</li>
+</ul>
+
+<h2>Pendant le cours</h2>
+<p>Respectez vos limites : une posture peut étirer, elle ne doit pas faire mal. Si quelque chose pince ou fait mal, sortez-en doucement et reposez-vous en position de l'enfant (assis sur les talons, front au sol). Personne ne vous en voudra. Et si vous êtes perdu, regardez le professeur plutôt que vos voisins : ils ne font pas forcément la bonne version.</p>
+
+<h2>Quel cours choisir pour débuter à Lyon</h2>
+<p>Pour un premier cours, choisissez un cours de Hatha, un cours doux ou un cours marqué « niveau 1 », « bases » ou « tous niveaux ». Notre planning en recense {debutant} chaque semaine à Lyon, réunis sur la page <a href="yoga-debutant-lyon.html">yoga pour débutants</a>. Beaucoup de studios proposent aussi un premier cours gratuit ou une offre découverte : nous les avons tous listés dans notre guide des <a href="cours-essai-yoga-lyon.html">cours d'essai à Lyon</a>.</p>
+
+<h2>Et après ?</h2>
+<p>Un seul cours ne dit pas grand-chose : les bienfaits se sentent après quelques séances, quand les postures deviennent familières. Essayez deux ou trois cours, si possible avec des professeurs ou des styles différents, puis gardez celui qui vous donne envie de revenir. Le meilleur cours, c'est souvent celui qui tombe au bon moment et pas trop loin de chez vous.</p>
 """

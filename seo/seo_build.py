@@ -33,10 +33,11 @@ from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from seo_content import (APROPOS_HISTOIRE, APROPOS_INTRO, COLLECTIONS, GUIDES, QUARTIERS, STUDIOS_GUIDE, STYLE_GUIDE, STYLE_GUIDE_CHOIX,  # noqa: E402
+from seo_content import (APROPOS_HISTOIRE, APROPOS_INTRO, COLLECTIONS, GUIDES, PREMIER_COURS, QUARTIERS, STUDIOS_GUIDE, STYLE_GUIDE, STYLE_GUIDE_CHOIX,  # noqa: E402
                          STYLES)
 from seo_profs import INDEPENDANTS, PROFS  # noqa: E402
 from seo_photos import PHOTOS  # noqa: E402
+from seo_tarifs import RELEVE, TARIFS  # noqa: E402
 import shutil  # noqa: E402
 
 BASE = "https://yoga-in-lyon.fr/"
@@ -391,6 +392,14 @@ def build_studio(s, studios, chrome_parts, profs_here=()):
     near_html = (f'<div class="section"><h2>Studios de yoga à proximité</h2>'
                  f'<div class="studio-list">{near}</div></div>') if same else ""
 
+    tarif_facts = ""
+    tf = TARIFS.get(s["name"], {})
+    if tarif_line(tf):
+        tarif_facts += (f'<div class="fact"><div class="k">Tarifs</div><div class="v">{esc(tarif_line(tf))}<br>'
+                        f'<a href="prix-cours-yoga-lyon.html" style="font-size:13px">Comparer les prix à Lyon →</a></div></div>')
+    if essai_line(tf):
+        tarif_facts += (f'<div class="fact"><div class="k">Cours d\'essai</div><div class="v">{esc(essai_line(tf))}<br>'
+                        f'<a href="cours-essai-yoga-lyon.html" style="font-size:13px">Tous les cours d\'essai →</a></div></div>')
     photo_html = ""
     if s.get("photo"):
         fn, w, h = s["photo"]
@@ -409,6 +418,7 @@ def build_studio(s, studios, chrome_parts, profs_here=()):
   <div class="fact"><div class="k">Quartier</div><div class="v"><a href="{arr_page(s['arr'])}">{esc(loc)}</a></div></div>
   <div class="fact"><div class="k">Styles</div><div class="v">{styles_links}</div></div>
   <div class="fact"><div class="k">Cours par semaine</div><div class="v">{n}</div></div>
+{tarif_facts}
   <div class="fact"><div class="k">Site du studio</div><div class="v"><a href="{esc(s['site'])}" target="_blank" rel="noopener">Réserver sur leur site →</a></div></div>
 </div>
 <div class="section">
@@ -943,6 +953,200 @@ def build_guide_styles(g, data, studios, chrome_parts):
     return article_shell(g, chrome_parts, body, studios)
 
 
+# --------------------------------------------------------------------------- tarifs
+def eur(x):
+    if x is None:
+        return "—"
+    s = f"{x:.2f}".replace(".", ",")
+    return (s[:-3] if s.endswith(",00") else s) + " €"
+
+
+def tarifs_for(studios):
+    """Studios du planning ayant des tarifs relevés, dans l'ordre du planning."""
+    return [(n, TARIFS[n]) for n in studios if n in TARIFS]
+
+
+def uniq_by_source(rows):
+    seen, out = set(), []
+    for n, t in rows:
+        if t.get("source") in seen:
+            continue
+        seen.add(t.get("source"))
+        out.append((n, t))
+    return out
+
+
+def median(xs):
+    xs = sorted(xs)
+    m = len(xs) // 2
+    return xs[m] if len(xs) % 2 else (xs[m - 1] + xs[m]) / 2
+
+
+def prix_stats(studios):
+    rows = uniq_by_source(tarifs_for(studios))
+    unite = [t["unite"] for _, t in rows if t.get("unite")]
+    carte = [t["carte"][1] / t["carte"][0] for _, t in rows if t.get("carte") and 8 <= t["carte"][0] <= 12]
+    annuel = [t["annuel"] for _, t in rows if t.get("annuel")]
+    gratuit = [n for n, t in tarifs_for(studios) if t.get("essai") == "gratuit"]
+    return {"unite": unite, "carte": carte, "annuel": annuel, "gratuit": gratuit}
+
+
+def tarif_line(t):
+    parts = []
+    if t.get("unite"):
+        parts.append(f'{eur(t["unite"])} le cours')
+    if t.get("carte"):
+        parts.append(f'{t["carte"][0]} cours : {eur(t["carte"][1])}')
+    if t.get("annuel"):
+        parts.append(f'{eur(t["annuel"])} l\'année (1 cours/sem.)')
+    elif t.get("trimestre"):
+        n, p = t["trimestre"]
+        parts.append(f'{eur(p)} le trimestre' + (f' ({n} cours)' if n else ""))
+    return " · ".join(parts)
+
+
+def essai_line(t):
+    e = t.get("essai")
+    if e == "gratuit":
+        s = "Premier cours gratuit"
+    elif e:
+        s = f"Cours d'essai : {eur(e)}"
+    else:
+        s = ""
+    d = t.get("decouverte")
+    if d:
+        txt = d[0] + (f" : {d[2]} cours pour {eur(d[1])}" if d[1] and d[2] else (f" : {eur(d[1])}" if d[1] else ""))
+        s = (s + " · " if s else "") + txt
+    if not s and t.get("essai_note"):
+        s = t["essai_note"][0].upper() + t["essai_note"][1:]
+    return s
+
+
+def guide_chapos(data, studios):
+    st = prix_stats(studios)
+    for g in GUIDES:
+        if g["kind"] == "prix" and st["unite"]:
+            g["chapo"] = (f"À Lyon, un cours de yoga à l'unité coûte autour de {eur(median(st['unite']))} "
+                          f"(de {eur(min(st['unite']))} à {eur(max(st['unite']))}), et descend autour de 10 € avec un "
+                          f"abonnement à l'année. Nous avons comparé les tarifs de "
+                          f"{sum(1 for _, t in tarifs_for(studios) if tarif_line(t))} studios.")
+            g["desc"] = (f"Prix d'un cours de yoga à Lyon : de {eur(min(st['unite']))} à {eur(max(st['unite']))} à "
+                         f"l'unité, cartes et abonnements comparés studio par studio. Tarifs relevés en {MOIS[int(RELEVE[5:7]) - 1]} {RELEVE[:4]}.")
+        if g["kind"] == "essai":
+            dec = [t["decouverte"] for _, t in tarifs_for(studios) if t.get("decouverte") and t["decouverte"][1]]
+            low = min(d[1] for d in dec) if dec else None
+            g["chapo"] = (f"{len(st['gratuit'])} studios lyonnais offrent le premier cours"
+                          + (f", et beaucoup d'autres proposent une offre découverte à partir de {eur(low)}" if low else "")
+                          + ". Voici où tester le yoga avant de vous engager.")
+            g["desc"] = (f"Cours de yoga d'essai gratuit à Lyon : {len(st['gratuit'])} studios offrent le premier cours. "
+                         "Offres découverte, prix et conditions, studio par studio.")
+
+
+def build_guide_prix(g, data, studios, chrome_parts):
+    st = prix_stats(studios)
+    rows = tarifs_for(studios)
+    facts = [("À l'unité", f"{eur(min(st['unite']))} à {eur(max(st['unite']))}"),
+             ("Carte de 10 cours", f"{eur(min(st['carte']))} à {eur(max(st['carte']))} le cours"),
+             ("À l'année, 1 cours/sem.", f"{eur(min(st['annuel']))} à {eur(max(st['annuel']))}"),
+             ("Premier cours gratuit", f"{len(st['gratuit'])} studios")]
+    facts_html = "".join(f'<div class="fact"><div class="k">{k}</div><div class="v" style="font-size:20px;'
+                         f'font-family:Fraunces,serif">{v}</div></div>' for k, v in facts)
+    order = sorted(rows, key=lambda r: (r[1].get("unite") or 99, r[0]))
+    trs = ""
+    for n, t in order:
+        if not (t.get("unite") or t.get("carte") or t.get("annuel") or t.get("trimestre")):
+            continue
+        carte = (f'{eur(t["carte"][1])} les {t["carte"][0]}<br><span class="s">{eur(t["carte"][1] / t["carte"][0])} le cours</span>'
+                 if t.get("carte") else "—")
+        an = (eur(t["annuel"]) + (f'<br><span class="s">{eur(t["annuel"] / t["seances"])} le cours</span>' if t.get("seances") else "")
+              if t.get("annuel") else (f'{eur(t["trimestre"][1])} le trimestre' if t.get("trimestre") else "—"))
+        trs += (f'<tr><td class="t"><a href="{studio_page(n)}">{esc(n)}</a><br><span class="s">{esc(studios[n]["arr"])}</span></td>'
+                f'<td>{eur(t.get("unite")) if t.get("unite") else "—"}</td><td>{carte}</td><td>{an}</td></tr>')
+    head = ('<tr><td class="t"><strong>Studio</strong></td><td><strong>À l\'unité</strong></td>'
+            '<td><strong>Carte de cours</strong></td><td><strong>À l\'année, 1 cours/sem.</strong></td></tr>')
+    per = sorted(((t["annuel"] / t["seances"], n) for n, t in uniq_by_source(rows) if t.get("annuel") and t.get("seances")))
+    cheap = ", ".join(f'<a href="{studio_page(n)}">{esc(n)}</a> ({eur(v)})' for v, n in per)
+    reduits = "".join(f'<li><a href="{studio_page(n)}">{esc(n)}</a> : {esc(t["reduit"])}</li>' for n, t in uniq_by_source(rows)
+                      if t.get("reduit"))
+    sans = sorted(n for n in studios if n not in TARIFS or not (TARIFS[n].get("unite") or TARIFS[n].get("carte")
+                                                                or TARIFS[n].get("annuel") or TARIFS[n].get("trimestre")))
+    notes = "".join(f'<li>{esc(n)} : {esc(t["note"])}</li>' for n, t in uniq_by_source(rows) if t.get("note"))
+    faq = [("Combien coûte un cours de yoga à Lyon ?",
+            f"Un cours à l'unité coûte de {eur(min(st['unite']))} à {eur(max(st['unite']))} selon les studios, "
+            f"autour de {eur(median(st['unite']))} en général. Avec une carte de 10 cours, le prix descend entre "
+            f"{eur(min(st['carte']))} et {eur(max(st['carte']))} le cours."),
+           ("Quelle est la formule la moins chère ?",
+            "L'abonnement à l'année sur un créneau fixe : autour de 10 à 14 € le cours dans la plupart des studios, "
+            "contre 20 € environ à l'unité."),
+           ("Peut-on essayer gratuitement ?",
+            f"Oui : {len(st['gratuit'])} studios offrent le premier cours, et beaucoup d'autres ont une offre découverte "
+            "à petit prix.")]
+    faq_html = "".join(f"<h3>{esc(q)}</h3><p>{esc(a)}</p>" for q, a in faq)
+    body = f"""
+<div class="facts">{facts_html}</div>
+<div class="section"><h2>Les tarifs studio par studio</h2>
+<p class="note" style="margin-bottom:10px">Plein tarif, cours collectifs de yoga, relevés sur les sites des studios le {date_fr(RELEVE)}.</p>
+<table class="slots">{head}{trs}</table></div>
+<div class="section seo-intro"><h2>La formule la moins chère : l'abonnement à l'année</h2>
+<p>S'engager sur un cours par semaine pour toute la saison revient deux fois moins cher que de payer à l'unité. Prix par cours des abonnements annuels qui indiquent leur nombre de séances : {cheap}.</p>
+<p>En contrepartie, vous êtes engagé sur un créneau fixe. Si vos horaires changent souvent, une carte de 10 cours, utilisable quand vous voulez, est le meilleur compromis.</p></div>
+<div class="section seo-intro"><h2>Payer moins cher</h2>
+<p>Plusieurs studios proposent des tarifs adaptés :</p><ul>{reduits}</ul>
+<p>Pensez aussi aux offres de découverte, souvent autour de 10 à 12 € le cours : nous les avons toutes réunies dans notre guide des <a href="cours-essai-yoga-lyon.html">cours d'essai à Lyon</a>.</p></div>
+<div class="section seo-intro"><h2>Ce que le prix ne dit pas</h2>
+<p>À prix égal, deux cours ne se valent pas forcément. Regardez aussi la <strong>durée</strong> (de 1h à 2h selon les studios), la <strong>taille des groupes</strong>, le <strong>matériel prêté</strong> (tapis, briques, sangles) et la <strong>souplesse de la formule</strong> : validité des cartes, possibilité de rattraper un cours manqué.</p></div>
+<div class="section seo-intro faq"><h2>Questions fréquentes</h2>{faq_html}</div>
+<div class="section seo-intro"><h2>Méthode</h2>
+<p>Tarifs relevés le {date_fr(RELEVE)} sur les sites des studios, au plein tarif, pour les cours collectifs de yoga. Les prix changent souvent en début de saison : vérifiez toujours sur le site du studio avant de vous inscrire.</p>
+{f'<ul>{notes}</ul>' if notes else ''}
+<p>Tarifs non publiés en ligne : {esc(list_fr(sans))}.</p>
+<p>Un prix a changé ? Écrivez-nous via la page <a href="A-propos.html#contact">contact</a>.</p></div>
+"""
+    out = article_shell(g, chrome_parts, body, studios)
+    faq_ld = jsonld({"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+        {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]})
+    return out.replace("</head>", faq_ld + "\n</head>", 1)
+
+
+def build_guide_essai(g, data, studios, chrome_parts):
+    rows = tarifs_for(studios)
+    gratuit = "".join(
+        f'<li><a href="{studio_page(n)}">{esc(n)}</a> ({esc(studios[n]["arr"])})'
+        + (f' : {esc(t["essai_note"])}' if t.get("essai_note") else "") + "</li>"
+        for n, t in rows if t.get("essai") == "gratuit")
+    dec = [(n, t["decouverte"]) for n, t in uniq_by_source(rows) if t.get("decouverte")]
+    dec.sort(key=lambda x: (x[1][1] is None, (x[1][1] / x[1][2]) if x[1][1] and x[1][2] else 99))
+    trs = "".join(
+        f'<tr><td class="t"><a href="{studio_page(n)}">{esc(n)}</a></td><td>{esc(d[0])}</td>'
+        f'<td>{eur(d[1]) if d[1] else "voir le site"}</td>'
+        f'<td class="s">{(eur(d[1] / d[2]) + " le cours") if d[1] and d[2] else ""}</td></tr>' for n, d in dec)
+    payant = "".join(
+        f'<li><a href="{studio_page(n)}">{esc(n)}</a> : {eur(t["essai"])}' + (f', {esc(t["essai_note"])}' if t.get("essai_note") else "") + "</li>"
+        for n, t in rows if isinstance(t.get("essai"), (int, float)))
+    autres = [n for n, t in rows if not t.get("essai") and not t.get("decouverte") and t.get("essai_note")]
+    autres_html = "".join(f'<li><a href="{studio_page(n)}">{esc(n)}</a> : {esc(TARIFS[n]["essai_note"])}</li>' for n in autres)
+    body = f"""
+<div class="section seo-intro"><h2>Les studios où le premier cours est gratuit</h2><ul>{gratuit}</ul>
+<p>Le plus souvent, il suffit de réserver en ligne ou de prévenir le studio. Pensez à préciser que c'est votre premier cours.</p></div>
+<div class="section"><h2>Les offres découverte</h2>
+<p class="note" style="margin-bottom:10px">Quelques cours à prix réduit pour tester plusieurs professeurs ou plusieurs styles, en général réservés aux nouveaux élèves.</p>
+<table class="slots"><tr><td class="t"><strong>Studio</strong></td><td><strong>Offre</strong></td><td><strong>Prix</strong></td><td class="s"><strong>Soit</strong></td></tr>{trs}</table></div>
+<div class="section seo-intro"><h2>Les cours d'essai à petit prix</h2><ul>{payant}{autres_html}</ul></div>
+<div class="section seo-intro"><h2>Bien choisir son cours d'essai</h2>
+<p>Pour un premier essai, choisissez un cours « niveau 1 », « bases » ou « tous niveaux » à un horaire que vous pourrez tenir chaque semaine : le but est de savoir si vous reviendrez. Et si vous hésitez entre deux studios, une offre découverte de trois ou quatre cours permet de comparer les professeurs.</p>
+<p>Tout ce qu'il faut savoir avant de dérouler votre tapis est dans notre guide du <a href="premier-cours-yoga.html">premier cours de yoga</a>, et les horaires adaptés aux débutants sur la page <a href="yoga-debutant-lyon.html">yoga pour débutants</a>.</p></div>
+<div class="section seo-intro"><h2>Méthode</h2>
+<p>Offres relevées le {date_fr(RELEVE)} sur les sites des studios. Beaucoup de studios ajoutent des cours d'essai offerts lors des portes ouvertes de septembre et de janvier : vérifiez sur leur site avant de vous déplacer.</p></div>
+"""
+    return article_shell(g, chrome_parts, body, studios)
+
+
+def build_guide_premier(g, data, studios, chrome_parts):
+    n = sum(1 for c in data if COLLECTION_FILTERS["debutant"](c))
+    body = f'<div class="section seo-intro">{PREMIER_COURS.replace("{debutant}", str(n))}</div>'
+    return article_shell(g, chrome_parts, body, studios)
+
+
 def build_guides_index(chrome_parts):
     items = "".join(f'<a class="item" href="{g["slug"]}.html"><strong>{esc(g["court"])}</strong>'
                     f'<span>{esc(g["chapo"])}</span></a>' for g in GUIDES)
@@ -1260,7 +1464,9 @@ def main(site):
         fn = COLLECTIONS[key]["slug"] + ".html"
         (site / fn).write_text(build_collection(key, data, studios, chrome_parts), encoding="utf-8")
         generated.append(fn)
-    builders = {"chiffres": build_guide_chiffres, "styles": build_guide_styles}
+    guide_chapos(data, studios)
+    builders = {"chiffres": build_guide_chiffres, "styles": build_guide_styles, "prix": build_guide_prix,
+                "essai": build_guide_essai, "premier": build_guide_premier}
     for g in GUIDES:
         (site / (g["slug"] + ".html")).write_text(builders[g["kind"]](g, data, studios, chrome_parts), encoding="utf-8")
         generated.append(g["slug"] + ".html")
