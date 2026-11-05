@@ -18,4 +18,6 @@ PHOTOS = {
     "O Yoga Studio": None,
     "École de Yoga Horizon": None,
     "L'Atelier du Yoga": None,
+    # Studio ajouté en novembre 2026 : pas de photo tant que son accord n'est pas obtenu
+    "Fauves Yoga": None,
 }

@@ -21,6 +21,13 @@ Champs (tous facultatifs) :
 RELEVE = "2026-10-31"
 
 TARIFS = {
+    "Fauves Yoga": {
+        "unite": 15, "carte": (10, 140), "annuel": 572, "seances": 48,
+        "decouverte": ("Pass découverte, 1 semaine pour tester 3 pratiques", 27, 3),
+        "reduit": "cours solidaires « payez ce que vous pouvez »",
+        "source": "https://fauves-yoga.com/cartes/",
+        "note": "tarifs des cours de yoga, Pilates et danse ; le Reformer est plus cher (25 € le cours)",
+    },
     "Vima Yoga": {
         "unite": 25, "carte": (10, 210), "annuel": 420, "seances": 40,
         "essai": 10, "essai_note": "déduit de l'abonnement",

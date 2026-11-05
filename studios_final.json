@@ -2122,5 +2122,359 @@
         "type": "Yin Yoga & Relaxation au Gong"
       }
     ]
+  },
+  {
+    "nom": "Pandi Panda Yoga",
+    "arr": "Villeurbanne",
+    "quartier": "Cusset",
+    "site": "https://pandipandayoga.com/",
+    "adresse": "268 rue du 4 août 1789, 69100 Villeurbanne",
+    "cours": [
+      {
+        "jour": "Lundi",
+        "debut": "18h15",
+        "fin": "19h15",
+        "type": "Vinyasa Yoga"
+      },
+      {
+        "jour": "Lundi",
+        "debut": "19h00",
+        "fin": "20h00",
+        "type": "Vinyasa Yoga (intermédiaire)"
+      },
+      {
+        "jour": "Lundi",
+        "debut": "19h30",
+        "fin": "20h30",
+        "type": "Vinyasa Yoga"
+      },
+      {
+        "jour": "Mardi",
+        "debut": "12h30",
+        "fin": "13h20",
+        "type": "Vinyasa Yoga"
+      },
+      {
+        "jour": "Mardi",
+        "debut": "18h00",
+        "fin": "19h00",
+        "type": "Yin Yoga"
+      },
+      {
+        "jour": "Mardi",
+        "debut": "19h00",
+        "fin": "20h00",
+        "type": "Yoga Aérien"
+      },
+      {
+        "jour": "Mardi",
+        "debut": "20h00",
+        "fin": "21h00",
+        "type": "Hatha Yoga"
+      },
+      {
+        "jour": "Mercredi",
+        "debut": "12h30",
+        "fin": "13h30",
+        "type": "Yoga Aérien"
+      },
+      {
+        "jour": "Mercredi",
+        "debut": "18h05",
+        "fin": "19h05",
+        "type": "Yoga Aérien"
+      },
+      {
+        "jour": "Mercredi",
+        "debut": "19h15",
+        "fin": "20h15",
+        "type": "Vinyasa Yoga (intermédiaire)"
+      },
+      {
+        "jour": "Jeudi",
+        "debut": "10h30",
+        "fin": "11h30",
+        "type": "Yoga Postnatal Maman Bébé"
+      },
+      {
+        "jour": "Jeudi",
+        "debut": "12h30",
+        "fin": "13h30",
+        "type": "Yoga Aérien Prénatal"
+      },
+      {
+        "jour": "Jeudi",
+        "debut": "18h00",
+        "fin": "19h00",
+        "type": "Hatha Yoga"
+      },
+      {
+        "jour": "Jeudi",
+        "debut": "19h05",
+        "fin": "20h05",
+        "type": "Yoga Aérien Acro"
+      },
+      {
+        "jour": "Vendredi",
+        "debut": "12h30",
+        "fin": "13h30",
+        "type": "Yoga Aérien"
+      },
+      {
+        "jour": "Samedi",
+        "debut": "10h00",
+        "fin": "11h00",
+        "type": "Yoga Aérien"
+      },
+      {
+        "jour": "Samedi",
+        "debut": "11h15",
+        "fin": "12h15",
+        "type": "Vinyasa Yoga"
+      },
+      {
+        "jour": "Dimanche",
+        "debut": "10h00",
+        "fin": "11h00",
+        "type": "Yoga Aérien (initiation)"
+      },
+      {
+        "jour": "Dimanche",
+        "debut": "11h15",
+        "fin": "12h15",
+        "type": "Yoga Aérien (débutant)"
+      }
+    ]
+  },
+  {
+    "nom": "Fauves Yoga",
+    "arr": "Lyon 5e",
+    "quartier": "Vieux Lyon",
+    "site": "https://fauves-yoga.com/",
+    "adresse": "23 rue Tramassac, 69005 Lyon",
+    "cours": [
+      {
+        "jour": "Mardi",
+        "debut": "09h45",
+        "fin": "10h35",
+        "type": "Yoga sur chaise"
+      },
+      {
+        "jour": "Mardi",
+        "debut": "12h00",
+        "fin": "13h30",
+        "type": "Vinyasa Patio"
+      },
+      {
+        "jour": "Mardi",
+        "debut": "12h15",
+        "fin": "13h00",
+        "type": "Yoga Sculpt express 45' (Pilates & renfo)"
+      },
+      {
+        "jour": "Mardi",
+        "debut": "13h00",
+        "fin": "13h45",
+        "type": "Yoga Vinyasa express 45'"
+      },
+      {
+        "jour": "Mardi",
+        "debut": "14h00",
+        "fin": "14h50",
+        "type": "Yoga Prénatal"
+      },
+      {
+        "jour": "Mardi",
+        "debut": "15h00",
+        "fin": "15h50",
+        "type": "Yoga Postnatal avec bébé"
+      },
+      {
+        "jour": "Mardi",
+        "debut": "17h00",
+        "fin": "17h50",
+        "type": "Yin Yoga & Bain sonore"
+      },
+      {
+        "jour": "Mardi",
+        "debut": "18h15",
+        "fin": "19h10",
+        "type": "Yoga Vinyasa"
+      },
+      {
+        "jour": "Mardi",
+        "debut": "19h15",
+        "fin": "20h10",
+        "type": "Power Yoga"
+      },
+      {
+        "jour": "Mardi",
+        "debut": "20h15",
+        "fin": "21h10",
+        "type": "Yoga Yin Yang"
+      },
+      {
+        "jour": "Mercredi",
+        "debut": "08h00",
+        "fin": "08h50",
+        "type": "Yoga Prénatal"
+      },
+      {
+        "jour": "Mercredi",
+        "debut": "09h00",
+        "fin": "09h50",
+        "type": "Yoga Postnatal avec bébé"
+      },
+      {
+        "jour": "Mercredi",
+        "debut": "10h00",
+        "fin": "10h55",
+        "type": "Yoga parent-enfant (3-8 ans)"
+      },
+      {
+        "jour": "Mercredi",
+        "debut": "11h00",
+        "fin": "11h55",
+        "type": "Yoga enfants (5-10 ans)"
+      },
+      {
+        "jour": "Mercredi",
+        "debut": "12h00",
+        "fin": "12h55",
+        "type": "Power Yoga"
+      },
+      {
+        "jour": "Mercredi",
+        "debut": "13h00",
+        "fin": "13h55",
+        "type": "Yoga Vinyasa débutants"
+      },
+      {
+        "jour": "Mercredi",
+        "debut": "14h00",
+        "fin": "14h50",
+        "type": "Pilates"
+      },
+      {
+        "jour": "Mercredi",
+        "debut": "15h00",
+        "fin": "15h55",
+        "type": "Pilates"
+      },
+      {
+        "jour": "Mercredi",
+        "debut": "18h15",
+        "fin": "19h05",
+        "type": "Hot Slow Flow"
+      },
+      {
+        "jour": "Mercredi",
+        "debut": "19h15",
+        "fin": "20h10",
+        "type": "Yoga Sculpt (Pilates & renfo)"
+      },
+      {
+        "jour": "Mercredi",
+        "debut": "20h15",
+        "fin": "21h10",
+        "type": "Souplesse"
+      },
+      {
+        "jour": "Jeudi",
+        "debut": "07h30",
+        "fin": "08h25",
+        "type": "Yoga de l'Énergie"
+      },
+      {
+        "jour": "Jeudi",
+        "debut": "08h30",
+        "fin": "09h25",
+        "type": "Yoga de l'Énergie"
+      },
+      {
+        "jour": "Jeudi",
+        "debut": "09h30",
+        "fin": "10h45",
+        "type": "Hatha Yoga"
+      },
+      {
+        "jour": "Jeudi",
+        "debut": "10h45",
+        "fin": "12h00",
+        "type": "Yoga Danse"
+      },
+      {
+        "jour": "Jeudi",
+        "debut": "12h15",
+        "fin": "13h05",
+        "type": "Hot Vinyasa"
+      },
+      {
+        "jour": "Jeudi",
+        "debut": "13h15",
+        "fin": "14h05",
+        "type": "Slow Flow"
+      },
+      {
+        "jour": "Jeudi",
+        "debut": "15h05",
+        "fin": "15h55",
+        "type": "Yoga Sculpt (Pilates & renfo)"
+      },
+      {
+        "jour": "Jeudi",
+        "debut": "17h00",
+        "fin": "17h55",
+        "type": "Yoga enfants (5-10 ans)"
+      },
+      {
+        "jour": "Jeudi",
+        "debut": "18h15",
+        "fin": "19h05",
+        "type": "Yoga Vinyasa"
+      },
+      {
+        "jour": "Jeudi",
+        "debut": "19h15",
+        "fin": "20h10",
+        "type": "Yoga Danse"
+      },
+      {
+        "jour": "Jeudi",
+        "debut": "20h15",
+        "fin": "21h10",
+        "type": "Hot Vinyasa"
+      },
+      {
+        "jour": "Dimanche",
+        "debut": "08h30",
+        "fin": "09h25",
+        "type": "Yoga Vinyasa"
+      },
+      {
+        "jour": "Dimanche",
+        "debut": "09h30",
+        "fin": "10h20",
+        "type": "Power Yoga"
+      },
+      {
+        "jour": "Dimanche",
+        "debut": "10h30",
+        "fin": "12h00",
+        "type": "Yoga Brunch"
+      },
+      {
+        "jour": "Dimanche",
+        "debut": "17h00",
+        "fin": "17h50",
+        "type": "Yoga Vinyasa"
+      },
+      {
+        "jour": "Dimanche",
+        "debut": "18h00",
+        "fin": "18h50",
+        "type": "Yin Yoga"
+      }
+    ]
   }
 ]

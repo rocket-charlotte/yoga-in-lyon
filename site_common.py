@@ -144,6 +144,7 @@ COORDS = {
     "Pranam Yoga": (45.7699, 4.8047),
     "Vima Yoga": (45.7665, 4.8807),
     "Pandi Panda Yoga": (45.7708, 4.8925),
+    "Fauves Yoga": (45.7598, 4.8262),
     "The Good Flow": (45.7645, 4.8530),
     "O Yoga Studio": (45.7690, 4.8480),
     "Les Ailes Hatha Yoga": (45.7715, 4.8555),
