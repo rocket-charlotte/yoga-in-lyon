@@ -33,7 +33,8 @@ from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from seo_content import (APROPOS_HISTOIRE, APROPOS_INTRO, COLLECTIONS, GUIDES, PREMIER_COURS, QUARTIERS, STUDIOS_GUIDE, STYLE_GUIDE, STYLE_GUIDE_CHOIX,  # noqa: E402
+from seo_content import (APROPOS_HISTOIRE, APROPOS_INTRO, COLLECTIONS, GUIDE_IMAGES, GUIDE_RETENIR, GUIDE_TAGS,  # noqa: E402
+                         GUIDES, PREMIER_COURS, QUARTIERS, STUDIOS_GUIDE, STYLE_GUIDE, STYLE_GUIDE_CHOIX,  # noqa: E402
                          STYLES)
 from seo_profs import INDEPENDANTS, PROFS  # noqa: E402
 from seo_photos import PHOTOS  # noqa: E402
@@ -867,26 +868,174 @@ def bar_rows(rows, total, link=None):
     return '<table class="slots">' + "".join(out) + "</table>"
 
 
-def article_shell(g, chrome_parts, body, studios):
+# --------------------------------------------------------------------------- guides : images et mise en page
+GUIDE_IMG = {}  # slug -> [(fichier, largeur, hauteur, alt)]
+
+
+def fetch_guide_images(site, report):
+    """Photos Unsplash des guides : téléchargées au déploiement (SEO_FETCH_PHOTOS=1)."""
+    do_fetch = os.environ.get("SEO_FETCH_PHOTOS") == "1"
+    for slug, imgs in GUIDE_IMAGES.items():
+        GUIDE_IMG[slug] = []
+        for i, (pid, alt) in enumerate(imgs):
+            fn = f"guide-{slug.strip('_')}-{i + 1}.jpg"
+            if do_fetch and not (site / fn).exists():
+                try:
+                    from PIL import Image
+                    import io
+                    im = Image.open(io.BytesIO(_download(f"https://images.unsplash.com/{pid}?w=1600&q=80&fm=jpg")))
+                    im.convert("RGB").save(site / fn, "JPEG", quality=76, optimize=True, progressive=True)
+                except Exception as e:
+                    report.append(f"Image de guide : échec pour {fn} ({type(e).__name__})")
+                    continue
+            if (site / fn).exists():
+                try:
+                    from PIL import Image
+                    with Image.open(site / fn) as im:
+                        GUIDE_IMG[slug].append((fn, im.size[0], im.size[1], alt))
+                except Exception:
+                    GUIDE_IMG[slug].append((fn, 1600, 1067, alt))
+
+
+def guide_img(slug, i, cls="guide-figure", eager=False):
+    imgs = GUIDE_IMG.get(slug, [])
+    if len(imgs) <= i:
+        return ""
+    fn, w, h, alt = imgs[i]
+    load = 'fetchpriority="high"' if eager else 'loading="lazy"'
+    return (f'<figure class="{cls}"><img src="{fn}" alt="{esc(alt)}" width="{w}" height="{h}" {load}>'
+            f'<figcaption>Photo Unsplash</figcaption></figure>')
+
+
+def reading_time(html_text):
+    words = len(re.findall(r"\w+", re.sub(r"<[^>]+>", " ", html_text)))
+    return max(2, round(words / 220))
+
+
+def guide_card(g):
+    img = GUIDE_IMG.get(g["slug"], [])
+    pic = (f'<img src="{img[0][0]}" alt="{esc(img[0][3])}" width="{img[0][1]}" height="{img[0][2]}" loading="lazy">'
+           if img else '<div class="gcard-ph"></div>')
+    tag = GUIDE_TAGS.get(g["kind"], "Guide")
+    return (f'<a class="gcard" href="{g["slug"]}.html">{pic}<div class="gcard-body"><span class="gtag">{esc(tag)}</span>'
+            f'<strong>{esc(g["court"])}</strong><span class="gchapo">{esc(g["chapo"])}</span></div></a>')
+
+
+def studio_cards(names, studios, note=lambda n: ""):
+    out = []
+    for n in names:
+        s = studios[n]
+        pic = (thumb(s).replace('class="thumb"', 'class="sc-img"') if s.get("photo")
+               else '<div class="sc-img sc-ph"></div>')
+        nt = note(n)
+        out.append(f'<a class="scard" href="{studio_page(n)}">{pic}<div class="sc-body"><strong>{esc(n)}</strong>'
+                   f'<span>{esc(s["arr"])}</span>{f"<em>{esc(nt)}</em>" if nt else ""}</div></a>')
+    return '<div class="scards">' + "".join(out) + "</div>"
+
+
+def callout(items, title="À retenir"):
+    if not items:
+        return ""
+    return (f'<aside class="callout"><div class="callout-k">{esc(title)}</div><ul>'
+            + "".join(f"<li>{x}</li>" for x in items) + "</ul></aside>")
+
+
+GUIDE_CSS = """
+  .guide-head { max-width: 1180px; margin: 0 auto; padding: 40px 24px 0; }
+  .guide-head .gtag { margin-right: 10px; }
+  .guide-meta { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+  .guide-head h1 { font-size: 38px; font-weight: 500; line-height: 1.15; margin: 10px 0 18px; max-width: 900px; }
+  .guide-figure { max-width: 1180px; margin: 0 auto; padding: 0 24px 8px; }
+  .guide-figure img { width: 100%; height: auto; max-height: 440px; object-fit: cover; border-radius: 22px; display: block; }
+  .guide-figure figcaption { font-size: 11.5px; color: var(--muted-soft); margin-top: 6px; text-align: right; }
+  .guide-figure.inline { padding: 8px 24px 28px; }
+  .guide-figure.inline img { max-width: 840px; max-height: 360px; border-radius: 18px; }
+  .guide-figure.inline figcaption { max-width: 840px; }
+  .lead { max-width: 1180px; margin: 0 auto; padding: 18px 24px 0; }
+  .lead p { font-size: 19px; line-height: 1.6; color: var(--ink); max-width: 760px; margin: 0; font-family: 'Fraunces', Georgia, serif; }
+  .callout { max-width: 712px; margin: 26px 24px 8px calc(max(24px, (100% - 1180px) / 2 + 24px)); background: var(--lavender-soft);
+             border-left: 4px solid var(--brand-purple); border-radius: 0 16px 16px 0; padding: 18px 22px; }
+  .callout-k { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--brand-purple); margin-bottom: 8px; }
+  .callout ul { margin: 0; padding-left: 18px; color: var(--ink); font-size: 15.5px; line-height: 1.65; }
+  .gtag { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+          padding: 4px 10px; border-radius: 999px; background: var(--lavender); color: var(--brand-purple); }
+  .gcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 26px; }
+  .gcard { display: flex; flex-direction: column; background: #fff; border-radius: 20px; overflow: hidden;
+           box-shadow: 0 6px 22px rgba(65,41,87,.08); transition: transform .2s, box-shadow .2s; color: var(--ink); }
+  .gcard:hover { transform: translateY(-4px); box-shadow: 0 16px 34px rgba(65,41,87,.14); color: var(--ink); }
+  .gcard img, .gcard-ph { width: 100%; height: 190px; object-fit: cover; display: block; }
+  .gcard-ph { background: linear-gradient(135deg, #e8c9c2, #c9a6d6); }
+  .gcard-body { padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+  .gcard strong { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 500; line-height: 1.25; }
+  .gchapo { font-size: 14px; color: #6a5a78; line-height: 1.55; }
+  .gcards.big .gcard:first-child { grid-column: 1 / -1; flex-direction: row; }
+  .gcards.big .gcard:first-child img, .gcards.big .gcard:first-child .gcard-ph { width: 55%; height: 340px; }
+  .gcards.big .gcard:first-child .gcard-body { justify-content: center; padding: 32px; }
+  .gcards.big .gcard:first-child strong { font-size: 28px; }
+  @media (max-width: 760px) { .gcards.big .gcard:first-child { flex-direction: column; }
+    .gcards.big .gcard:first-child img, .gcards.big .gcard:first-child .gcard-ph { width: 100%; height: 200px; } }
+  .guides-hero { position: relative; max-width: 1180px; margin: 24px auto 0; padding: 0 24px; }
+  .guides-hero img { width: 100%; height: 360px; object-fit: cover; border-radius: 24px; display: block; }
+  .guides-hero .ov { position: absolute; inset: 0 24px; border-radius: 24px;
+                     background: linear-gradient(90deg, rgba(44,28,61,.82), rgba(44,28,61,.15)); }
+  .guides-hero .txt { position: absolute; left: 64px; bottom: 44px; right: 64px; color: #FBF8F4; max-width: 560px; }
+  .guides-hero h1 { font-size: 40px; font-weight: 500; margin: 0 0 10px; color: #FBF8F4; }
+  .guides-hero p { font-size: 16px; line-height: 1.55; margin: 0; color: #efe6f7; }
+  @media (max-width: 700px) { .guides-hero img { height: 300px; } .guides-hero .txt { left: 40px; right: 40px; bottom: 28px; }
+    .guides-hero h1 { font-size: 30px; } .guide-head h1 { font-size: 30px; } }
+  .scards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .scard { display: flex; flex-direction: column; background: #fff; border-radius: 16px; overflow: hidden; color: var(--ink);
+           border: 1px solid var(--border); transition: transform .2s; }
+  .scard:hover { transform: translateY(-3px); color: var(--ink); }
+  .sc-img { width: 100%; height: 130px; object-fit: cover; display: block; }
+  .sc-ph { background: linear-gradient(135deg, #f0d9a8, #cdbdf5); }
+  .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 3px; }
+  .sc-body strong { font-family: 'Fraunces', serif; font-weight: 500; font-size: 16px; }
+  .sc-body span { font-size: 12.5px; color: var(--muted); }
+  .sc-body em { font-style: normal; font-size: 13px; color: #5a4a68; margin-top: 4px; }
+  .facts.color .fact { background: var(--lavender-soft); border-color: transparent; }
+  .facts.color .fact:nth-child(2) { background: #fbeee4; } .facts.color .fact:nth-child(3) { background: #e6f1ec; }
+  .facts.color .fact:nth-child(4) { background: #f4e6ef; }
+  .section h2, .seo-intro h2 { position: relative; }
+  .tthumb { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; float: left; margin: 2px 10px 0 0; }
+"""
+
+
+EXTRA_CSS += GUIDE_CSS
+
+
+def article_shell(g, chrome_parts, body, studios, retenir=None):
     title = g["titre"]
     pub, mod = g["publie"], max(g["publie"], DATA_DATE)
+    retenir = retenir if retenir is not None else GUIDE_RETENIR.get(g["kind"], [])
+    # photo secondaire glissée avant la 3e section (ou la 2e s'il n'y en a que deux)
+    idx = [m.start() for m in re.finditer(r'<div class="section', body)]
+    if len(idx) >= 2:
+        k = idx[2] if len(idx) >= 3 else idx[1]
+        body = body[:k] + guide_img(g["slug"], 1, "guide-figure inline") + body[k:]
     head = f"""
 <nav class="crumbs" aria-label="Fil d'Ariane"><a href="/">Accueil</a> › <a href="guides.html">Guides</a> › {esc(g['court'])}</nav>
-<div class="quartier-hero"><div class="eyebrow">Guide · mis à jour le {date_fr(mod)}</div><h1>{esc(title)}</h1></div>
-<div class="seo-intro"><p><strong>{esc(g['chapo'])}</strong></p></div>
+<div class="guide-head"><span class="gtag">{esc(GUIDE_TAGS.get(g["kind"], "Guide"))}</span>
+<h1>{esc(title)}</h1>
+<p class="guide-meta">Lecture {reading_time(body)} min · Mis à jour le {date_fr(mod)} · Par Yoga In Lyon</p></div>
+{guide_img(g["slug"], 0, eager=True)}
+<div class="lead"><p>{esc(g['chapo'])}</p></div>
+{callout(retenir)}
 """
-    others = "".join(f'<a href="{o["slug"]}.html">{esc(o["court"])}</a>' for o in GUIDES if o["slug"] != g["slug"])
-    tail = (f'<div class="section"><h2>À lire aussi</h2><div class="pills">{others}'
+    others = [o for o in GUIDES if o["slug"] != g["slug"]][:3]
+    tail = (f'<div class="section"><h2>À lire aussi</h2><div class="gcards">{"".join(guide_card(o) for o in others)}</div>'
+            f'<div class="pills" style="margin-top:22px"><a href="guides.html">Tous les guides</a>'
             f'<a href="Studios.html">Tous les studios</a><a href="{PLANNING}">Le planning de la semaine</a></div></div>')
+    img = GUIDE_IMG.get(g["slug"], [])
     ld = [{"@context": "https://schema.org", "@type": "Article", "headline": title, "description": g["chapo"],
            "url": BASE + g["slug"] + ".html", "datePublished": pub, "dateModified": mod, "inLanguage": "fr-FR",
-           "image": BASE + "banner_web.jpg",
+           "image": BASE + (img[0][0] if img else "banner_web.jpg"),
            "author": {"@type": "Organization", "name": "Yoga In Lyon", "url": BASE},
            "publisher": {"@type": "Organization", "name": "Yoga In Lyon", "logo": {"@type": "ImageObject",
                                                                                   "url": BASE + "logo_web.png"}}},
           breadcrumb([("Accueil", "/"), ("Guides", "guides.html"), (g["court"], g["slug"] + ".html")])]
     return page_shell(chrome_parts, title=title, desc=g.get("desc", g["chapo"]), canonical=g["slug"] + ".html",
-                      body=head + body + tail, ld=ld)
+                      body=head + body + tail, ld=ld, og_image=img[0][0] if img else None)
 
 
 def build_guide_chiffres(g, data, studios, chrome_parts):
@@ -908,8 +1057,11 @@ def build_guide_chiffres(g, data, studios, chrome_parts):
     facts = "".join(f'<div class="fact"><div class="k">{k}</div><div class="v" style="font-size:26px;font-family:Fraunces,serif">{v}</div></div>'
                     for k, v in [("Studios", ns), ("Cours par semaine", n), ("Zones couvertes", len(ar)),
                                  ("Styles", len(st))])
+    retenir = [f"<strong>{n}</strong> cours de yoga chaque semaine dans <strong>{ns}</strong> studios.",
+               f"Le {esc(st[0][0])} représente {st[0][1] / n * 100:.0f} % des cours.",
+               f"{soir / n * 100:.0f} % des cours ont lieu en soirée ; le {busiest[0].lower()} est le jour le plus chargé."]
     body = f"""
-<div class="facts">{facts}</div>
+<div class="facts color">{facts}</div>
 <div class="section"><h2>Le {esc(st[0][0])} représente {st[0][1] / n * 100:.0f} % des cours</h2>
 {bar_rows([(k, v, "") for k, v in st], n, link=lambda k: style_page(k) if k in STYLES else None)}</div>
 <div class="section"><h2>Le {esc(arr_label(top_arr[0]) if top_arr[0] != "Villeurbanne" else top_arr[0])} concentre le plus de cours</h2>
@@ -929,7 +1081,7 @@ def build_guide_chiffres(g, data, studios, chrome_parts):
 <p>Journalistes et blogueurs : ces chiffres sont libres de reprise avec un lien vers yoga-in-lyon.fr. Pour un classement sur mesure, écrivez à contact@yoga-in-lyon.fr.</p></div>
 """
     g = dict(g, titre=f"Le yoga à Lyon en chiffres : {ns} studios, {n} cours par semaine")
-    return article_shell(g, chrome_parts, body, studios)
+    return article_shell(g, chrome_parts, body, studios, retenir)
 
 
 def build_guide_styles(g, data, studios, chrome_parts):
@@ -1060,7 +1212,8 @@ def build_guide_prix(g, data, studios, chrome_parts):
                  if t.get("carte") else "—")
         an = (eur(t["annuel"]) + (f'<br><span class="s">{eur(t["annuel"] / t["seances"])} le cours</span>' if t.get("seances") else "")
               if t.get("annuel") else (f'{eur(t["trimestre"][1])} le trimestre' if t.get("trimestre") else "—"))
-        trs += (f'<tr><td class="t"><a href="{studio_page(n)}">{esc(n)}</a><br><span class="s">{esc(studios[n]["arr"])}</span></td>'
+        tim = thumb(studios[n]).replace('class="thumb"', 'class="tthumb"')
+        trs += (f'<tr><td class="t">{tim}<a href="{studio_page(n)}">{esc(n)}</a><br><span class="s">{esc(studios[n]["arr"])}</span></td>'
                 f'<td>{eur(t.get("unite")) if t.get("unite") else "—"}</td><td>{carte}</td><td>{an}</td></tr>')
     head = ('<tr><td class="t"><strong>Studio</strong></td><td><strong>À l\'unité</strong></td>'
             '<td><strong>Carte de cours</strong></td><td><strong>À l\'année, 1 cours/sem.</strong></td></tr>')
@@ -1083,7 +1236,7 @@ def build_guide_prix(g, data, studios, chrome_parts):
             "à petit prix.")]
     faq_html = "".join(f"<h3>{esc(q)}</h3><p>{esc(a)}</p>" for q, a in faq)
     body = f"""
-<div class="facts">{facts_html}</div>
+<div class="facts color">{facts_html}</div>
 <div class="section"><h2>Les tarifs studio par studio</h2>
 <p class="note" style="margin-bottom:10px">Plein tarif, cours collectifs de yoga, relevés sur les sites des studios le {date_fr(RELEVE)}.</p>
 <table class="slots">{head}{trs}</table></div>
@@ -1102,7 +1255,11 @@ def build_guide_prix(g, data, studios, chrome_parts):
 <p>Tarifs non publiés en ligne : {esc(list_fr(sans))}.</p>
 <p>Un prix a changé ? Écrivez-nous via la page <a href="A-propos.html#contact">contact</a>.</p></div>
 """
-    out = article_shell(g, chrome_parts, body, studios)
+    retenir = [f"À l'unité : de {eur(min(st['unite']))} à {eur(max(st['unite']))}, autour de {eur(median(st['unite']))}.",
+               f"Avec une carte de 10 cours : {eur(min(st['carte']))} à {eur(max(st['carte']))} le cours.",
+               "À l'année, sur un créneau fixe : autour de 10 à 14 € le cours, la formule la moins chère.",
+               f"{len(st['gratuit'])} studios offrent le premier cours."]
+    out = article_shell(g, chrome_parts, body, studios, retenir)
     faq_ld = jsonld({"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
         {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]})
     return out.replace("</head>", faq_ld + "\n</head>", 1)
@@ -1126,7 +1283,7 @@ def build_guide_essai(g, data, studios, chrome_parts):
     autres = [n for n, t in rows if not t.get("essai") and not t.get("decouverte") and t.get("essai_note")]
     autres_html = "".join(f'<li><a href="{studio_page(n)}">{esc(n)}</a> : {esc(TARIFS[n]["essai_note"])}</li>' for n in autres)
     body = f"""
-<div class="section seo-intro"><h2>Les studios où le premier cours est gratuit</h2><ul>{gratuit}</ul>
+<div class="section"><h2>Les studios où le premier cours est gratuit</h2>{studio_cards([n for n, t in rows if t.get("essai") == "gratuit"], studios, lambda n: TARIFS[n].get("essai_note", "").capitalize())}
 <p>Le plus souvent, il suffit de réserver en ligne ou de prévenir le studio. Pensez à préciser que c'est votre premier cours.</p></div>
 <div class="section"><h2>Les offres découverte</h2>
 <p class="note" style="margin-bottom:10px">Quelques cours à prix réduit pour tester plusieurs professeurs ou plusieurs styles, en général réservés aux nouveaux élèves.</p>
@@ -1138,7 +1295,12 @@ def build_guide_essai(g, data, studios, chrome_parts):
 <div class="section seo-intro"><h2>Méthode</h2>
 <p>Offres relevées le {date_fr(RELEVE)} sur les sites des studios. Beaucoup de studios ajoutent des cours d'essai offerts lors des portes ouvertes de septembre et de janvier : vérifiez sur leur site avant de vous déplacer.</p></div>
 """
-    return article_shell(g, chrome_parts, body, studios)
+    cheap = [d for _, d in dec if d[1] and d[2]]
+    best = min(cheap, key=lambda d: d[1] / d[2]) if cheap else None
+    retenir = [f"<strong>{sum(1 for _, t in rows if t.get('essai') == 'gratuit')} studios</strong> offrent le premier cours.",
+               (f"L'offre découverte la plus avantageuse revient à {eur(best[1] / best[2])} le cours." if best else ""),
+               "Les portes ouvertes de septembre et de janvier ajoutent souvent des essais gratuits."]
+    return article_shell(g, chrome_parts, body, studios, [x for x in retenir if x])
 
 
 def build_guide_premier(g, data, studios, chrome_parts):
@@ -1148,20 +1310,30 @@ def build_guide_premier(g, data, studios, chrome_parts):
 
 
 def build_guides_index(chrome_parts):
-    items = "".join(f'<a class="item" href="{g["slug"]}.html"><strong>{esc(g["court"])}</strong>'
-                    f'<span>{esc(g["chapo"])}</span></a>' for g in GUIDES)
+    hero = GUIDE_IMG.get("_index", [])
+    hero_html = ""
+    if hero:
+        fn, w, h, alt = hero[0]
+        hero_html = (f'<div class="guides-hero"><img src="{fn}" alt="{esc(alt)}" width="{w}" height="{h}" fetchpriority="high">'
+                     f'<div class="ov"></div><div class="txt"><span class="gtag">Yoga In Lyon</span>'
+                     f'<h1>Guides du yoga à Lyon</h1><p>Choisir son cours, comprendre les styles, payer le juste prix : '
+                     f'nos guides pour pratiquer à Lyon, à partir des plannings de tous les studios.</p></div></div>')
+    else:
+        hero_html = ('<div class="guide-head"><span class="gtag">Yoga In Lyon</span><h1>Guides du yoga à Lyon</h1></div>')
+    order = sorted(GUIDES, key=lambda g: g["publie"], reverse=True)
     body = f"""
 <nav class="crumbs" aria-label="Fil d'Ariane"><a href="/">Accueil</a> › Guides</nav>
-<div class="quartier-hero"><div class="eyebrow">Yoga In Lyon</div><h1>Guides du yoga à Lyon</h1></div>
-<div class="seo-intro"><p>Nos guides pour choisir son cours, comprendre les styles de yoga et découvrir la pratique à Lyon, à partir des plannings de tous les studios.</p></div>
-<div class="section"><div class="studio-list">{items}</div></div>
+{hero_html}
+<div class="section" style="padding-top:36px"><div class="gcards big">{"".join(guide_card(g) for g in order)}</div></div>
+<div class="section"><h2>Trouver un cours selon vos envies</h2><div class="pills">{collections_pills()}</div></div>
 """
     ld = [{"@context": "https://schema.org", "@type": "CollectionPage", "name": "Guides du yoga à Lyon",
            "url": BASE + "guides.html"}, breadcrumb([("Accueil", "/"), ("Guides", "guides.html")])]
     return page_shell(chrome_parts, title="Guides du yoga à Lyon : styles, quartiers, horaires",
-                      desc="Les guides de Yoga In Lyon : quel style de yoga choisir pour débuter, le yoga à Lyon en "
-                           "chiffres, où et quand pratiquer. Basés sur les plannings de tous les studios.",
-                      canonical="guides.html", body=body, ld=ld)
+                      desc="Les guides de Yoga In Lyon : prix des cours, cours d'essai gratuits, premier cours, quel "
+                           "style choisir, le yoga à Lyon en chiffres. Basés sur les plannings de tous les studios.",
+                      canonical="guides.html", body=body, ld=ld,
+                      og_image=hero[0][0] if hero else None)
 
 
 def build_404(chrome_parts):
@@ -1465,6 +1637,7 @@ def main(site):
         (site / fn).write_text(build_collection(key, data, studios, chrome_parts), encoding="utf-8")
         generated.append(fn)
     guide_chapos(data, studios)
+    fetch_guide_images(site, report)
     builders = {"chiffres": build_guide_chiffres, "styles": build_guide_styles, "prix": build_guide_prix,
                 "essai": build_guide_essai, "premier": build_guide_premier}
     for g in GUIDES:

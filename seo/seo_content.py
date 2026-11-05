@@ -351,3 +351,32 @@ PREMIER_COURS = """
 <h2>Et après ?</h2>
 <p>Un seul cours ne dit pas grand-chose : les bienfaits se sentent après quelques séances, quand les postures deviennent familières. Essayez deux ou trois cours, si possible avec des professeurs ou des styles différents, puis gardez celui qui vous donne envie de revenir. Le meilleur cours, c'est souvent celui qui tombe au bon moment et pas trop loin de chez vous.</p>
 """
+
+
+# ---------------------------------------------------------------------------
+# Images des guides : photos Unsplash (licence Unsplash, usage libre et gratuit), téléchargées au
+# déploiement. Clé = slug du guide (ou "_index" pour la page Guides) ; [photo principale, photo secondaire].
+GUIDE_IMAGES = {
+    "_index": [("photo-1710635851336-82ede6083db9", "Les quais de Saône et la colline de Fourvière à Lyon")],
+    "guide-yoga-lyon-en-chiffres": [("photo-1682249302260-bc29fe4bd912", "Vue aérienne de Lyon"),
+                                    ("photo-1602929942560-0e1126b25077", "La basilique de Fourvière à Lyon")],
+    "guide-choisir-style-yoga": [("photo-1787647089849-d082bb425a4a", "Un groupe pratique le yoga dans un studio lumineux"),
+                                 ("photo-1593164842264-854604db2260", "Une élève tient une posture d'équilibre sur son tapis")],
+    "prix-cours-yoga-lyon": [("photo-1687783615494-b4a1f1af8b58", "Une salle de yoga avec des tapis alignés au sol"),
+                             ("photo-1761971975962-9cc397e2ba2a", "Un studio de yoga baigné de lumière")],
+    "cours-essai-yoga-lyon": [("photo-1683056255281-e52a141924f0", "Un cours collectif de yoga en studio"),
+                              ("photo-1787647090390-890c94512cee", "Des élèves réalisent la posture de l'aigle")],
+    "premier-cours-yoga": [("photo-1637157216470-d92cd2edb2e8", "Des pieds nus sur un tapis de yoga vert"),
+                           ("photo-1771270786606-f5a0e57db762", "Briques, sangles et accessoires de yoga rangés au mur")],
+}
+
+GUIDE_TAGS = {"chiffres": "Données", "styles": "Débuter", "prix": "Budget", "essai": "Bons plans", "premier": "Débuter"}
+
+GUIDE_RETENIR = {
+    "premier": ["Pas besoin d'être souple : on le devient en pratiquant.",
+                "Une tenue souple, les pieds nus ; le tapis est souvent prêté par le studio.",
+                "Prévenez le professeur que c'est votre premier cours et signalez toute douleur."],
+    "styles": ["Pour débuter : Hatha ou Iyengar.",
+               "Pour se détendre : Yin yoga ou yoga Nidra.",
+               "Pour transpirer : Vinyasa, Ashtanga ou hot yoga."],
+}
